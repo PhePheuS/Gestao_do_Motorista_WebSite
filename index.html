@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestão do Motorista</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Gestão do Motorista</h1>
+
+    <section class="card">
+      <h2>Status do aplicativo</h2>
+      <p><strong>Empresa:</strong> <span id="companyName">Transportes Exemplo</span></p>
+      <p><strong>Intervalo:</strong> <span id="locationInterval">30s</span></p>
+      <p><strong>Permissão:</strong> <span id="permissionStatus">Pendente</span></p>
+      <p><strong>Status:</strong> <span id="monitoringStatus">Parado</span></p>
+      <p><strong>Última atualização:</strong> <span id="lastUpdate">Ainda não iniciada</span></p>
+      <p><strong>Localização atual:</strong> <span id="locationText">Sem localização</span></p>
+      <p><strong>Modo debug:</strong> <span id="debugMode">Inativo</span></p>
+    </section>
+
+    <section class="actions">
+      <button id="permissionBtn">Conceder localização</button>
+      <button id="startBtn">Iniciar monitoramento</button>
+      <button id="stopBtn" disabled>Parar monitoramento</button>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
