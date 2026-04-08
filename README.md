@@ -1,6 +1,6 @@
 ﻿# GestÃ£o do Motorista WebSite
 
-Site pÃºblico do projeto **GestÃ£o do Motorista**.
+Site pÃºblico do projeto GestÃ£o do Motorista.
 
 ## Acessar pÃ¡gina publicada
 
