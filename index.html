@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle do Motorista - Profissional</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Barra de Ações -->
+        <div class="action-bar no-print">
+            <button id="btn-novo" class="btn btn-primary">
+                <span class="icon">➕</span> Novo Lançamento
+            </button>
+            <button id="btn-whatsapp" class="btn btn-whatsapp">
+                <span class="icon">📱</span> Enviar por WhatsApp
+            </button>
+            <button id="btn-imprimir" class="btn btn-secondary">
+                <span class="icon">🖨️</span> Imprimir / Salvar PDF
+            </button>
+        </div>
+
+        <!-- Título e Relógio -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; padding: 0 0.5rem;">
+            <div>
+                <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; color: #fff; margin: 0;">Controle do Motorista</h1>
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin: 0.2rem 0 0 0;">Sistema Profissional de Gestão</p>
+            </div>
+            <div id="real-time-clock" style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--accent-color); letter-spacing: 1px; background: rgba(59, 130, 246, 0.1); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2);">00:00:00</div>
+        </div>
+
+        <!-- Cabeçalho Editável -->
+        <div class="header-card">
+            <div class="header-item">
+                <label>Data</label>
+                <input type="text" id="header-data" class="header-input" placeholder="DDMMYYYY">
+            </div>
+            <div class="header-item">
+                <label>Horário Escala</label>
+                <input type="text" id="header-pegada" class="header-input" placeholder="00:00">
+            </div>
+            <div class="header-item">
+                <label>Nome do Motorista</label>
+                <input type="text" id="header-motorista" class="header-input" placeholder="Ex: Wilson Ramos">
+            </div>
+            <div class="header-item">
+                <label>Matrícula</label>
+                <input type="text" id="header-matricula" class="header-input" placeholder="Ex: 36455">
+            </div>
+            <div class="header-item item-carro-avarias">
+                <div class="field-group">
+                    <button id="btn-inserir-carro" class="btn btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.75rem; background: #f39c12;">
+                        Inserir Carro
+                    </button>
+                    <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                        <div class="sub-field" style="flex: 0 0 100px;">
+                            <label>Carro</label>
+                            <input type="text" id="input-novo-carro" class="header-input" placeholder="Ex: 110.275" style="border-bottom: 1px solid #f39c12;">
+                        </div>
+                        <div class="sub-field" style="flex: 1;">
+                            <label>Avarias</label>
+                            <input type="text" id="input-novas-avarias" class="header-input" placeholder="Descreva...">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="cars-history-container" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <!-- Histórico de carros aparecerá aqui -->
+                </div>
+
+                <!-- Campo oculto para referência -->
+                <input type="hidden" id="header-carro" value="">
+                <input type="hidden" id="avarias-input" value="">
+            </div>
+
+            <div class="header-item item-linha">
+                <div class="field-group">
+                    <button id="btn-inserir-linha" class="btn btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.75rem;">
+                        Inserir Linha
+                    </button>
+                    <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                        <div class="sub-field" style="flex: 0 0 100px;">
+                            <label>Linha</label>
+                            <input type="text" id="input-nova-linha" class="header-input" placeholder="Ex: 904T" style="border-bottom: 1px solid var(--accent-blue);">
+                        </div>
+                        <div class="sub-field" style="flex: 1;">
+                            <label>Descrição</label>
+                            <input type="text" id="input-nova-desc" class="header-input" placeholder="Ex: Descreva...">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="lines-history-container" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                    <!-- As linhas inseridas aparecerão aqui dinamicamente -->
+                </div>
+
+                <!-- Campo oculto para manter a referência da linha ativa para o script -->
+                <input type="hidden" id="header-linha-num" value="">
+                <input type="hidden" id="header-linha-nome" value="">
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 8px;">
+            <div id="roleta-summary" style="display: flex; gap: 2rem;">
+                <!-- Resumo de roletas por carro aparecerá aqui -->
+                <div class="stat-item" id="initial-roleta-item" style="display: none;">
+                    <span class="stat-label">ROLETA INICIAL:</span>
+                    <span class="stat-value" id="roleta-inicial-display">00000</span>
+                    <input type="hidden" id="roleta-inicial" value="0">
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">ROLETA FINAL:</span>
+                    <span class="stat-value" id="roleta-final-display">00000</span>
+                    <input type="hidden" id="roleta-final" value="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Viagens -->
+        <div class="main-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="padding: 0.5rem 0.2rem;"><button class="btn-stamp" onclick="stampTime(this, 'Garagem')">Garagem</button></th>
+                        <th style="padding: 0.5rem 0.2rem;"><button class="btn-stamp" onclick="stampTime(this, 'Fiscal')">Fiscal</button></th>
+                        <th style="padding: 0.5rem 0.2rem;"><button class="btn-stamp" onclick="stampTime(this, 'Ponto')">Ponto</button></th>
+                        <th style="padding: 0.5rem 0.2rem;"><button class="btn-stamp" onclick="stampTime(this, 'Placa')">Placa</button></th>
+                        <th colspan="4" style="border-bottom: none;"></th>
+                    </tr>
+                    <tr id="dynamic-table-headers">
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th style="width: 80px;">Carro</th>
+                        <th style="width: 80px;">Linha</th>
+                        <th>Roleta</th>
+                        <th>Passageiros</th>
+                    </tr>
+                </thead>
+                <tbody id="trip-table-body">
+                    <!-- Gerado pelo JS -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="1" style="text-align: right; color: var(--text-label); font-size: 0.75rem;">Total Passageiros</td>
+                        <td id="stat-total-pax" style="font-weight: 700; color: var(--accent-blue);">0</td>
+                        <td colspan="4"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="bottom-grid">
+            <div class="info-card">
+                <h3>Informações Validador</h3>
+                <div id="validator-table-container" class="info-table-container">
+                    <!-- Gerado dinamicamente pelo JS -->
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>Informações Filipeta</h3>
+                <div id="filipeta-table-container" class="info-table-container">
+                    <!-- Gerado dinamicamente pelo JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Venda a Bordo no Final -->
+        <div class="info-card" style="margin-top: 1.5rem;">
+            <div class="header-item">
+                <label>Venda a Bordo</label>
+                <input type="text" id="header-venda" class="header-input" placeholder="R$ 0,00" style="font-size: 1.5rem;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal WhatsApp -->
+    <div id="whatsapp-modal" class="modal-overlay no-print" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem; color: #25D366;">
+                    <span>📱</span> Enviar por WhatsApp
+                </h3>
+                <button id="btn-fechar-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label style="font-size: 0.75rem; color: var(--text-label); font-weight: 700; text-transform: uppercase; margin-bottom: 0.4rem; display: block;">Prévia da Mensagem</label>
+                <textarea id="whatsapp-preview-text" class="modal-textarea" readonly></textarea>
+                <div class="modal-actions-grid">
+                    <button id="btn-wa-padrao" class="btn btn-wa-option">
+                        <span class="icon" style="font-size: 1.3rem;">📱</span>
+                        <div style="text-align: left;">
+                            <strong style="display: block; font-size: 0.95rem; color: #fff;">WhatsApp (Padrão)</strong>
+                            <small style="font-size: 0.75rem; color: var(--text-label);">Abre o seletor ou app WhatsApp</small>
+                        </div>
+                    </button>
+                    <button id="btn-wa-business" class="btn btn-wa-option">
+                        <span class="icon" style="font-size: 1.3rem;">💼</span>
+                        <div style="text-align: left;">
+                            <strong style="display: block; font-size: 0.95rem; color: #fff;">WhatsApp Business</strong>
+                            <small style="font-size: 0.75rem; color: var(--text-label);">Enviar via WhatsApp Business</small>
+                        </div>
+                    </button>
+                    <button id="btn-wa-web" class="btn btn-wa-option">
+                        <span class="icon" style="font-size: 1.3rem;">🌐</span>
+                        <div style="text-align: left;">
+                            <strong style="display: block; font-size: 0.95rem; color: #fff;">WhatsApp Web</strong>
+                            <small style="font-size: 0.75rem; color: var(--text-label);">Abrir WhatsApp Web no navegador</small>
+                        </div>
+                    </button>
+                    <button id="btn-wa-copy" class="btn btn-wa-option">
+                        <span class="icon" style="font-size: 1.3rem;">📋</span>
+                        <div style="text-align: left;">
+                            <strong id="btn-copy-label" style="display: block; font-size: 0.95rem; color: #fff;">Copiar Mensagem</strong>
+                            <small style="font-size: 0.75rem; color: var(--text-label);">Copiar texto para área de transferência</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
