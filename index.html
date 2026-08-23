@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle do Motorista - Profissional</title>
+    <!-- PWA / Offline Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111827">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,8 +15,26 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(error => {
+                    console.log('SW Registration failed:', error);
+                });
+            });
+        }
+    </script>
     <div class="app-container">
-        <!-- Barra de Ações -->
+        <!-- Título e Slogan Principal (Centralizado no Topo) -->
+        <header class="app-header">
+            <div class="title-text-group">
+                <h1 class="main-title">Controle do Motorista</h1>
+                <p class="subtitle">Sistema Profissional de Gestão</p>
+            </div>
+            <div id="real-time-clock" class="clock-display">00:00:00</div>
+        </header>
+
+        <!-- Barra de Ações (Abaixo do Título) -->
         <div class="action-bar no-print">
             <button id="btn-novo" class="btn btn-primary">
                 <span class="icon">➕</span> Novo Lançamento
@@ -21,24 +42,23 @@
             <button id="btn-whatsapp" class="btn btn-whatsapp">
                 <span class="icon">📱</span> Enviar por WhatsApp
             </button>
-            <button id="btn-imprimir" class="btn btn-secondary">
+            <button id="btn-imprimir" class="btn btn-print">
                 <span class="icon">🖨️</span> Imprimir / Salvar PDF
             </button>
-        </div>
-
-        <!-- Título e Relógio -->
-        <div class="title-clock-container">
-            <div class="title-text-group">
-                <h1 class="main-title">Controle do Motorista</h1>
-                <p class="subtitle">Sistema Profissional de Gestão</p>
-            </div>
-            <div id="real-time-clock" class="clock-display">00:00:00</div>
+            <button id="btn-historico" class="btn btn-history">
+                <span class="icon">📜</span> Histórico
+            </button>
         </div>
 
         <!-- Cabeçalho Editável -->
         <div class="header-card">
             <div class="header-item">
-                <label>Data</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <label style="margin-bottom: 0;">Data</label>
+                    <button id="btn-salvar-historico" type="button" class="btn-save-badge" title="Salvar lançamento atual no Histórico">
+                        💾 Salvar Histórico
+                    </button>
+                </div>
                 <input type="text" id="header-data" class="header-input" placeholder="DDMMYYYY">
             </div>
             <div class="header-item">
@@ -46,12 +66,12 @@
                 <input type="text" id="header-pegada" class="header-input" placeholder="00:00">
             </div>
             <div class="header-item">
-                <label>Nome do Motorista</label>
-                <input type="text" id="header-motorista" class="header-input" placeholder="Ex: Wilson Ramos">
-            </div>
-            <div class="header-item">
                 <label>Matrícula</label>
                 <input type="text" id="header-matricula" class="header-input" placeholder="Ex: 36455">
+            </div>
+            <div class="header-item">
+                <label>Nome do Motorista</label>
+                <input type="text" id="header-motorista" class="header-input" placeholder="Ex: Wilson Ramos">
             </div>
             <div class="header-item item-carro-avarias">
                 <div class="field-group">
@@ -103,6 +123,93 @@
                 <!-- Campo oculto para manter a referência da linha ativa para o script -->
                 <input type="hidden" id="header-linha-num" value="">
                 <input type="hidden" id="header-linha-nome" value="">
+            </div>
+        </div>
+
+        <!-- Card de Controle de Jornada e Horas Extras (Carga 7h) -->
+        <div class="info-card jornada-card">
+            <div class="jornada-card-header">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="font-size: 1.3rem;">⏱️</span>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.05rem; color: #fff;">Controle de Jornada & Horas Extras</h3>
+                        <small style="color: var(--text-label); font-size: 0.72rem;">Transporte Coletivo de Passageiros</small>
+                    </div>
+                </div>
+                <span class="badge-carga">Carga Horária: <strong>7h</strong></span>
+            </div>
+
+            <div class="jornada-grid">
+                <!-- Coluna 1: Início da Jornada -->
+                <div class="jornada-column">
+                    <div class="jornada-col-title">🚩 Início de Jornada</div>
+                    
+                    <div class="jornada-field">
+                        <label>Horário na Escala</label>
+                        <input type="text" id="header-pegada" class="header-input time-mask" placeholder="00:00" maxlength="5" oninput="formatTime(this, false)" onblur="formatTime(this, true)">
+                    </div>
+
+                    <div class="jornada-field">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                <label style="margin: 0;">Horário de Chegada</label>
+                                <span id="badge-tipo-chegada" class="badge-pill badge-pill-car" style="display: none; font-size: 0.65rem; padding: 0.1rem 0.45rem;"></span>
+                            </div>
+                            <div style="display: flex; gap: 0.3rem;">
+                                <button type="button" id="btn-pegada-garagem" class="btn-stamp-micro" title="Carimbar Chegada na Garagem">🚌 Garagem</button>
+                                <button type="button" id="btn-pegada-ponto" class="btn-stamp-micro" title="Carimbar Chegada no Ponto">📍 Ponto</button>
+                            </div>
+                        </div>
+                        <input type="text" id="header-chegada" class="header-input time-mask" placeholder="00:00" maxlength="5" oninput="formatTime(this, false)" onblur="formatTime(this, true)">
+                        <input type="hidden" id="header-chegada-tipo" value="">
+                    </div>
+
+                    <div class="jornada-subinfo">
+                        <span class="subinfo-label">Início Considerado:</span>
+                        <strong id="inicio-efetivo-display" class="subinfo-val">--:--</strong>
+                    </div>
+                </div>
+
+                <!-- Coluna 2: Término da Jornada -->
+                <div class="jornada-column">
+                    <div class="jornada-col-title">🏁 Término de Jornada</div>
+                    
+                    <div class="jornada-field">
+                        <label>Término Rádio / Operador CCO</label>
+                        <input type="text" id="header-termino-radio" class="header-input time-mask" placeholder="00:00" maxlength="5">
+                    </div>
+
+                    <div class="jornada-field">
+                        <label style="margin-bottom: 0.2rem;">Término Relógio da Página</label>
+                        <input type="text" id="header-termino-relogio" class="header-input auto-locked-field" placeholder="--:--" readonly tabindex="-1" title="Campo automático preenchido pelo relógio da página" style="cursor: not-allowed; opacity: 0.95; font-weight: 700; color: #58a6ff;">
+                    </div>
+
+                    <div class="jornada-subinfo">
+                        <span class="subinfo-label">Final Prestação Contas (+15m):</span>
+                        <strong id="termino-prestacao-display" class="subinfo-val" style="color: #4ade80;">--:--</strong>
+                    </div>
+                </div>
+
+                <!-- Coluna 3: Cálculo das Horas Extras -->
+                <div class="jornada-column jornada-col-results">
+                    <div class="jornada-col-title">⚡ Horas Extras (Carga 7h)</div>
+                    
+                    <div class="he-result-box">
+                        <div class="he-result-top">
+                            <span class="he-label">H.E. TÉRMINO RÁDIO / CCO</span>
+                            <span class="he-value" id="he-radio-display">00:00</span>
+                        </div>
+                        <div class="he-duration-sub">Duração da Jornada: <strong id="duracao-radio-display">00:00</strong></div>
+                    </div>
+
+                    <div class="he-result-box he-result-prestacao">
+                        <div class="he-result-top">
+                            <span class="he-label">H.E. PRESTAÇÃO DE CONTAS (+15m)</span>
+                            <span class="he-value" id="he-prestacao-display">00:00</span>
+                        </div>
+                        <div class="he-duration-sub">Duração com +15m: <strong id="duracao-prestacao-display">00:00</strong></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -227,7 +334,63 @@
             </div>
         </div>
     </div>
+    <!-- Modal Histórico -->
+    <div id="historico-modal" class="modal-overlay no-print" style="display: none;">
+        <div class="modal-card modal-card-large">
+            <div class="modal-header">
+                <h3 style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; color: #58a6ff;">
+                    <span>📜</span> Histórico de Lançamentos
+                </h3>
+                <button id="btn-fechar-historico" class="btn-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Visão 1: Lista de Dias Salvos -->
+                <div id="historico-lista-view">
+                    <div class="historico-search-bar">
+                        <input type="text" id="historico-search-input" class="header-input" placeholder="🔍 Filtrar por data, linha, carro ou motorista...">
+                        <span id="historico-total-count" class="badge-count">0 registros</span>
+                    </div>
 
-    <script src="script.js"></script>
+                    <div id="historico-cards-list" class="historico-cards-container">
+                        <!-- Cards gerados dinamicamente via JS -->
+                    </div>
+
+                    <div id="historico-empty-state" class="empty-state" style="display: none;">
+                        <span style="font-size: 2.5rem; margin-bottom: 0.5rem; display: block;">📂</span>
+                        <h4 style="color: #fff; margin: 0 0 0.4rem 0;">Nenhum lançamento salvo no histórico</h4>
+                        <p style="color: var(--text-label); font-size: 0.85rem; margin: 0;">
+                            Preencha os dados do dia no painel principal e clique no botão <strong>"💾 Salvar Histórico"</strong> ao lado do campo de Data.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Visão 2: Detalhes do Lançamento Histórico Selecionado -->
+                <div id="historico-detalhe-view" style="display: none;">
+                    <div class="detalhe-nav-bar">
+                        <button id="btn-voltar-historico" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                            <span class="icon">⬅️</span> Voltar à Lista
+                        </button>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button id="btn-detalhe-carregar" class="btn btn-primary" style="padding: 0.5rem 1rem;">
+                                <span class="icon">📥</span> Carregar no Painel Principal
+                            </button>
+                            <button id="btn-detalhe-imprimir" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                <span class="icon">🖨️</span> Imprimir
+                            </button>
+                        </div>
+                    </div>
+                    <div id="historico-detalhe-content" class="historico-detalhe-sheet">
+                        <!-- Conteúdo da folha histórica renderizado aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container no-print"></div>
+
+    <script src="script.js?v=10"></script>
 </body>
 </html>
