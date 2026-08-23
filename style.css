@@ -1408,12 +1408,99 @@ td {
     pointer-events: none;
 }
 
-@media (max-width: 1024px) {
-    .jornada-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+/* ==========================================================================
+   Painel de Carimbos Rápidos de Horário
+   ========================================================================== */
+.stamp-control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    background: linear-gradient(145deg, rgba(22, 27, 34, 0.95), rgba(13, 17, 23, 0.9));
+    border: 1px solid rgba(47, 129, 247, 0.25);
+    border-radius: 10px;
+    padding: 0.85rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stamp-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.stamp-row-top {
+    justify-content: stretch;
+}
+
+.stamp-row-middle,
+.stamp-row-bottom {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.5rem;
+}
+
+.btn-stamp-action {
+    background: rgba(47, 129, 247, 0.12);
+    color: #58a6ff;
+    border: 1px solid rgba(47, 129, 247, 0.3);
+    border-radius: 6px;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.btn-stamp-action:hover {
+    background: rgba(47, 129, 247, 0.28);
+    color: #ffffff;
+    border-color: #58a6ff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(47, 129, 247, 0.3);
+}
+
+.btn-stamp-action:active {
+    transform: translateY(0);
+}
+
+.btn-stamp-pegada {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(29, 78, 216, 0.35));
+    border-color: rgba(37, 99, 235, 0.5);
+    color: #93c5fd;
+    flex: 1;
+    min-width: 140px;
+}
+
+.btn-stamp-pegada:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+}
+
+.btn-stamp-placa {
+    background: rgba(243, 156, 18, 0.15);
+    border-color: rgba(243, 156, 18, 0.4);
+    color: #fbbf24;
+}
+
+.btn-stamp-placa:hover {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .stamp-row-middle,
+    .stamp-row-bottom {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
+
 
 
 

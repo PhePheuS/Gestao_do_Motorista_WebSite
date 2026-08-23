@@ -971,6 +971,11 @@ function undoReset() {
 }
 
 function stampTime(buttonElement, buttonName) {
+    if (!buttonName && typeof buttonElement === 'string') {
+        buttonName = buttonElement;
+    }
+    if (!buttonName) buttonName = "Horário";
+
     const tableBody = document.getElementById('trip-table-body');
     let rows = tableBody.querySelectorAll('tr');
     if (rows.length === 0) {
@@ -981,57 +986,60 @@ function stampTime(buttonElement, buttonName) {
     let lastRow = rows[rows.length - 1];
     let idx = lastRow.dataset.index;
     
-    // Se o argumento for apenas uma string (retrocompatibilidade)
-    let colIndex = -1;
-    if (typeof buttonElement === 'string') {
-        buttonName = buttonElement;
-        const map = {
-            'Garagem': 1,
-            'Fiscal': 2,
-            'Ponto': 3,
-            'Placa': 4
-        };
-        colIndex = map[buttonName] || 1;
-    } else {
-        const th = buttonElement.closest('th');
-        const ths = Array.from(th.parentNode.children);
-        colIndex = ths.indexOf(th) + 1; // 1-based index (1, 2, 3, 4)
+    // Procura o primeiro slot de horário vazio (h1, h2, h3, h4) na última linha
+    let targetCol = null;
+    for (let c = 1; c <= 4; c++) {
+        const inp = document.getElementById(`h${c}-${idx}`);
+        if (inp && inp.value.trim() === "") {
+            targetCol = c;
+            break;
+        }
     }
     
-    const inputId = `h${colIndex}-${idx}`;
-    let input = document.getElementById(inputId);
-    
-    // Se a coluna correspondente na última linha já tiver valor, adiciona uma nova linha primeiro
-    if (input && input.value !== "") {
+    // Se todos os 4 slots da linha atual já estiverem preenchidos, adiciona uma nova linha
+    if (targetCol === null) {
         addRow();
         rows = tableBody.querySelectorAll('tr');
         lastRow = rows[rows.length - 1];
         idx = lastRow.dataset.index;
-        input = document.getElementById(`h${colIndex}-${idx}`);
+        targetCol = 1;
     }
     
+    const inputId = `h${targetCol}-${idx}`;
+    let input = document.getElementById(inputId);
+    
     if (input) {
-        const now = new Date(Date.now() + timeOffset);
-        input.value = `${padZero(now.getHours())}:${padZero(now.getMinutes())}`;
+        const nowTime = getCurrentClockTime();
+        input.value = nowTime;
         
-        // Atualizar o nome do cabeçalho para este slot
+        // Atualiza dinamicamente o cabeçalho desta coluna com o nome do botão clicado
         const headerRow = document.getElementById('dynamic-table-headers');
         if (headerRow) {
             const ths = headerRow.querySelectorAll('th');
-            if (ths[colIndex - 1]) {
-                ths[colIndex - 1].textContent = buttonName;
+            if (ths[targetCol - 1]) {
+                ths[targetCol - 1].textContent = buttonName;
             }
         }
         
-        // Efeito visual
-        input.style.backgroundColor = 'rgba(47, 129, 247, 0.2)';
-        setTimeout(() => input.style.backgroundColor = 'transparent', 500);
+        // Efeito visual de confirmação
+        input.style.backgroundColor = 'rgba(47, 129, 247, 0.3)';
+        setTimeout(() => input.style.backgroundColor = 'transparent', 600);
         
-        // Adiciona nova linha automaticamente se for Placa (última coluna) ou se o botão é "Placa"
-        if (colIndex === 4 || buttonName.toLowerCase() === 'placa') {
+        // Se for Placa ou se preencheu o 4º slot com Placa, adiciona nova linha
+        if (buttonName.toLowerCase() === 'placa') {
             addRow();
         }
         
+        // Se for Pegada e o horário de chegada no topo estiver vazio, sincroniza também
+        if (buttonName.includes('Pegada')) {
+            const tipo = buttonName.includes('Garagem') ? 'Garagem' : 'Ponto';
+            const chegadaInput = document.getElementById('header-chegada');
+            if (chegadaInput && !chegadaInput.value) {
+                stampPegada(tipo);
+            }
+        }
+
+        mostrarToast(`${buttonName} registrado às ${nowTime} (Coluna ${targetCol})!`, "success");
         saveToLocal();
     }
 }
@@ -1040,8 +1048,6 @@ function updateDynamicHeaders() {
     const headerRow = document.getElementById('dynamic-table-headers');
     if (!headerRow) return;
     const ths = headerRow.querySelectorAll('th');
-    
-    const colNames = ["Garagem", "Fiscal", "Ponto", "Placa"];
     
     for (let col = 1; col <= 4; col++) {
         let hasValue = false;
@@ -1053,10 +1059,8 @@ function updateDynamicHeaders() {
             }
         });
         
-        if (!hasValue) {
-            ths[col - 1].textContent = "";
-        } else {
-            ths[col - 1].textContent = colNames[col - 1];
+        if (!hasValue && ths[col - 1]) {
+            ths[col - 1].textContent = `${col}º Horário`;
         }
     }
     saveToLocal();

@@ -229,22 +229,44 @@
             </div>
         </div>
 
+        <!-- Painel de Carimbos Rápidos de Horário -->
+        <div class="stamp-control-panel">
+            <!-- Linha 1 (Superior / Pegada) -->
+            <div class="stamp-row stamp-row-top">
+                <button type="button" class="btn-stamp-action btn-stamp-pegada" onclick="stampTime(this, 'Pegada Garagem')">🚌 Pegada Garagem</button>
+                <button type="button" class="btn-stamp-action btn-stamp-pegada" onclick="stampTime(this, 'Pegada Ponto')">📍 Pegada Ponto</button>
+            </div>
+
+            <!-- Linha 2 (Meio / Chegada e Saída Fiscal & Ponto) -->
+            <div class="stamp-row stamp-row-middle">
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Chegada Fiscal')">🏢 Chegada Fiscal</button>
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Saída Fiscal')">🚀 Saída Fiscal</button>
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Chegada Ponto')">📍 Chegada Ponto</button>
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Saída Ponto')">🏁 Saída Ponto</button>
+            </div>
+
+            <!-- Linha 3 (Inferior / Chegada e Saída Fiscal & Ponto + Gerais e Placa) -->
+            <div class="stamp-row stamp-row-bottom">
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Chegada Fiscal')">🏢 Chegada Fiscal</button>
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Saída Fiscal')">🚀 Saída Fiscal</button>
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Chegada Ponto')">📍 Chegada Ponto</button>
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Saída Ponto')">🏁 Saída Ponto</button>
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Garagem')">🚌 Garagem</button>
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Fiscal')">🏢 Fiscal</button>
+                <button type="button" class="btn-stamp-action" onclick="stampTime(this, 'Ponto')">📍 Ponto</button>
+                <button type="button" class="btn-stamp-action btn-stamp-placa" onclick="stampTime(this, 'Placa')">🏷️ Placa</button>
+            </div>
+        </div>
+
         <!-- Tabela de Viagens -->
         <div class="main-table-container">
             <table>
                 <thead>
-                    <tr>
-                        <th style="padding: 0.5rem 0.2rem;"><button class="btn-stamp" onclick="stampTime(this, 'Garagem')">Garagem</button></th>
-                        <th style="padding: 0.5rem 0.2rem;"><button class="btn-stamp" onclick="stampTime(this, 'Fiscal')">Fiscal</button></th>
-                        <th style="padding: 0.5rem 0.2rem;"><button class="btn-stamp" onclick="stampTime(this, 'Ponto')">Ponto</button></th>
-                        <th style="padding: 0.5rem 0.2rem;"><button class="btn-stamp" onclick="stampTime(this, 'Placa')">Placa</button></th>
-                        <th colspan="4" style="border-bottom: none;"></th>
-                    </tr>
                     <tr id="dynamic-table-headers">
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
+                        <th style="min-width: 95px;">1º Horário</th>
+                        <th style="min-width: 95px;">2º Horário</th>
+                        <th style="min-width: 95px;">3º Horário</th>
+                        <th style="min-width: 95px;">4º Horário</th>
                         <th style="width: 80px;">Carro</th>
                         <th style="width: 80px;">Linha</th>
                         <th>Roleta</th>
@@ -391,6 +413,6 @@
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="toast-container no-print"></div>
 
-    <script src="script.js?v=10"></script>
+    <script src="script.js?v=11"></script>
 </body>
 </html>
