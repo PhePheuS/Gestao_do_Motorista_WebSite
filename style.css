@@ -338,11 +338,13 @@ body {
   animation: blink-separator 1s step-end infinite;
 }
 
-/* Container de Ações do Topo: INSERIR, ESCALA e VOLTAR */
+/* Container de Ações do Topo: Linha 1 (Badge do Módulo) e Linha 2 (VOLTAR e INSERIR) */
 .selected-badge-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 12px;
   margin-top: var(--space-3);
   width: 100%;
   animation: fade-slide-in 0.3s ease forwards;
@@ -352,7 +354,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
