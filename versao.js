@@ -12,7 +12,7 @@
 (function () {
   // CONFIGURAÇÃO CENTRAL DE VERSÃO
   // ATENÇÃO: Incrementar esta versão a cada alteração no projeto!
-  const VERSAO_ATUAL = '2.30.0';
+  const VERSAO_ATUAL = '2.31.2';
   const DATA_VERSAO = '2026-08-30';
 
   // Exporta globalmente

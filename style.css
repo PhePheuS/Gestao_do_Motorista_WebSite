@@ -564,6 +564,13 @@ body {
 /* Grid de Botões dentro do Card */
 .card-buttons-grid {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.card-buttons-row {
+  display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
@@ -910,6 +917,19 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.item-jornada-card:hover {
+  border-color: rgba(230, 81, 0, 0.45);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.item-jornada-card--editando {
+  border-color: #e65100 !important;
+  box-shadow: 0 0 12px rgba(230, 81, 0, 0.35);
+  background-color: rgba(230, 81, 0, 0.07) !important;
 }
 
 /* Linhas dentro do item de jornada */

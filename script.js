@@ -1050,6 +1050,7 @@ function initJornadaModule() {
 
   let etapasJornadaAtiva = [];
   let tipoTrocaAtual = 'linha';
+  let jornadaEmEdicaoIndex = null;
 
   if (!dataInput || !semanaInput) return;
 
@@ -1420,6 +1421,183 @@ function initJornadaModule() {
     } catch (e) {
       console.warn('[Jornada] Erro ao restaurar rascunho:', e);
     }
+  }
+
+  /**
+   * Preenche todos os campos do formulário da jornada com os dados de um card existente,
+   * permitindo ao usuário visualizar o que já foi preenchido e completar os campos vazios ou em branco.
+   */
+  function preencherFormularioComJornada(jornada, index) {
+    if (!jornada) return;
+    jornadaEmEdicaoIndex = (index !== undefined && index !== null) ? Number(index) : null;
+
+    if (dataInput && jornada.data) dataInput.value = jornada.data;
+    if (semanaInput && (jornada.semana || jornada.diaSemana)) semanaInput.value = jornada.semana || jornada.diaSemana;
+    if (horaInput) {
+      horaInput.value = jornada.horaPegada || '';
+      horaInput.readOnly = true;
+    }
+    if (matInput) {
+      matInput.value = jornada.matricula || '';
+      matInput.readOnly = true;
+    }
+    if (motInput) {
+      motInput.value = jornada.motorista || '';
+      motInput.readOnly = true;
+    }
+    if (linhaInput) {
+      linhaInput.value = jornada.linha || '';
+      linhaInput.readOnly = true;
+    }
+    if (linhaNomeInput) {
+      linhaNomeInput.value = jornada.linhaNome || '';
+      linhaNomeInput.readOnly = true;
+    }
+
+    if (carroNumInput) carroNumInput.value = jornada.carroNumero || '';
+    if (carroSiglaInput) {
+      carroSiglaInput.value = jornada.carroSigla || '';
+      carroSiglaInput.readOnly = true;
+    }
+    if (carroPlacaInput) {
+      carroPlacaInput.value = jornada.carroPlaca || '';
+      carroPlacaInput.readOnly = true;
+    }
+
+    if (kmPainelInicialInput) kmPainelInicialInput.value = jornada.kmPainelInicial || '';
+    if (kmPainelFinalInput) kmPainelFinalInput.value = jornada.kmPainelFinal || '';
+    if (kmPainelRodadoInput) kmPainelRodadoInput.value = jornada.kmPainelRodado || '';
+
+    if (kmTacoInicialInput) kmTacoInicialInput.value = jornada.kmTacoInicial || '';
+    if (kmTacoFinalInput) kmTacoFinalInput.value = jornada.kmTacoFinal || '';
+    if (kmTacoRodadoInput) kmTacoRodadoInput.value = jornada.kmTacoRodado || '';
+
+    if (avariasInput) avariasInput.value = jornada.avarias || '';
+
+    if (inputChegadaGaragem) inputChegadaGaragem.value = jornada.chegadaGaragem || '';
+    if (inputChegadaPonto1) inputChegadaPonto1.value = jornada.chegadaPonto1 || '';
+    if (inputChegadaCarro) inputChegadaCarro.value = jornada.chegadaCarro || '';
+    if (inputHoraVinculacao) inputHoraVinculacao.value = jornada.horaVinculacao || '';
+
+    if (inputRoletas) inputRoletas.value = jornada.roletas || '';
+    if (inputChegadaPonto2) inputChegadaPonto2.value = jornada.chegadaPonto2 || '';
+    if (inputFiscalizacao1) inputFiscalizacao1.value = jornada.fiscalizacao1 || '';
+    if (inputSaidaPonto) inputSaidaPonto.value = jornada.saidaPonto || '';
+    if (inputChegadaPlaca) inputChegadaPlaca.value = jornada.chegadaPlaca || '';
+    if (inputFiscalizacao2) inputFiscalizacao2.value = jornada.fiscalizacao2 || '';
+    if (inputSaidaPlaca) inputSaidaPlaca.value = jornada.saidaPlaca || '';
+
+    if (inputRoletaInicial) inputRoletaInicial.value = jornada.roletaInicial || '';
+    if (inputRoletaFinal) inputRoletaFinal.value = jornada.roletaFinal || '';
+    if (inputRoletaPassageiros) inputRoletaPassageiros.value = jornada.roletaPassageiros || '';
+
+    // Sessoes dinâmicas de viagem
+    if (containerLinhasRoletas) {
+      containerLinhasRoletas.innerHTML = '';
+      totalLinhasRoletas = 0;
+      if (Array.isArray(jornada.sessoes) && jornada.sessoes.length > 0) {
+        jornada.sessoes.forEach(s => criarNovaLinhaRoletas(s));
+      }
+    }
+
+    // Validador e Filipeta por carro
+    if (jornada.validador) {
+      const c = jornada.validador.carro || jornada.carroNumero || '';
+      if (c) dadosValidadorPorCarro[c] = jornada.validador;
+      if (inputValidadorCarro) inputValidadorCarro.value = c;
+      if (inputValidadorGratuidade) inputValidadorGratuidade.value = jornada.validador.gratuidade || '';
+      if (inputValidadorVales) inputValidadorVales.value = jornada.validador.valesTransporte || '';
+      if (inputValidadorQrCode) inputValidadorQrCode.value = jornada.validador.qrCode || '';
+    }
+    if (jornada.filipeta) {
+      const c = jornada.filipeta.carro || jornada.carroNumero || '';
+      if (c) dadosFilipetaPorCarro[c] = jornada.filipeta;
+      if (inputFilipetaCarro) inputFilipetaCarro.value = c;
+      if (inputFilipetaColeta) inputFilipetaColeta.value = jornada.filipeta.coleta || '';
+      if (inputFilipetaPagantes) inputFilipetaPagantes.value = jornada.filipeta.pagantes || '';
+      if (inputFilipetaGratuidades) inputFilipetaGratuidades.value = jornada.filipeta.gratuidades || '';
+      if (inputFilipetaVales) inputFilipetaVales.value = jornada.filipeta.valesTransporte || '';
+      if (inputFilipetaPassageiros) inputFilipetaPassageiros.value = jornada.filipeta.passageiros || '';
+    }
+
+    // Etapas anteriores em andamento
+    if (Array.isArray(jornada.etapas) && jornada.etapas.length > 1) {
+      etapasJornadaAtiva = jornada.etapas.slice(0, -1);
+      renderizarEtapasEmAndamento();
+    } else {
+      etapasJornadaAtiva = [];
+      renderizarEtapasEmAndamento();
+    }
+
+    // Aplica destaque visual no card sendo editado/atualizado
+    document.querySelectorAll('.item-jornada-card').forEach((el, idx) => {
+      if (idx === jornadaEmEdicaoIndex) {
+        el.classList.add('item-jornada-card--editando');
+      } else {
+        el.classList.remove('item-jornada-card--editando');
+      }
+    });
+
+    renderizarSecoesMultiCarro();
+    atualizarRoletasTotaisAutomaticas();
+    salvarRascunhoJornada();
+  }
+
+  /**
+   * Reseta o formulário após salvar ou limpar, garantindo readonly correto.
+   */
+  function resetarFormularioJornada() {
+    jornadaEmEdicaoIndex = null;
+    etapasJornadaAtiva = [];
+    renderizarEtapasEmAndamento();
+    if (indicadorEtapaAtual) indicadorEtapaAtual.style.display = 'none';
+
+    if (dataInput) dataInput.value = '';
+    if (semanaInput) semanaInput.value = '';
+    if (horaInput) { horaInput.value = ''; horaInput.readOnly = true; }
+    if (matInput) { matInput.value = ''; matInput.readOnly = true; }
+    if (motInput) { motInput.value = ''; motInput.readOnly = true; }
+    if (linhaInput) { linhaInput.value = ''; linhaInput.readOnly = true; }
+    if (linhaNomeInput) { linhaNomeInput.value = ''; linhaNomeInput.readOnly = true; }
+    if (carroSiglaInput) { carroSiglaInput.value = ''; carroSiglaInput.readOnly = true; }
+    if (carroNumInput) carroNumInput.value = '';
+    if (carroPlacaInput) { carroPlacaInput.value = ''; carroPlacaInput.readOnly = true; }
+    if (kmPainelInicialInput) kmPainelInicialInput.value = '';
+    if (kmPainelFinalInput) kmPainelFinalInput.value = '';
+    if (kmPainelRodadoInput) kmPainelRodadoInput.value = '';
+    if (kmTacoInicialInput) kmTacoInicialInput.value = '';
+    if (kmTacoFinalInput) kmTacoFinalInput.value = '';
+    if (kmTacoRodadoInput) kmTacoRodadoInput.value = '';
+    if (avariasInput) avariasInput.value = '';
+
+    if (inputChegadaGaragem) { inputChegadaGaragem.value = ''; inputChegadaGaragem.readOnly = true; }
+    if (inputChegadaPonto1) { inputChegadaPonto1.value = ''; inputChegadaPonto1.readOnly = true; }
+    if (inputChegadaCarro) { inputChegadaCarro.value = ''; inputChegadaCarro.readOnly = true; }
+    if (inputHoraVinculacao) { inputHoraVinculacao.value = ''; inputHoraVinculacao.readOnly = true; }
+    if (inputRoletas) inputRoletas.value = '';
+    if (inputChegadaPonto2) { inputChegadaPonto2.value = ''; inputChegadaPonto2.readOnly = true; }
+    if (inputFiscalizacao1) { inputFiscalizacao1.value = ''; inputFiscalizacao1.readOnly = true; }
+    if (inputSaidaPonto) { inputSaidaPonto.value = ''; inputSaidaPonto.readOnly = true; }
+    if (inputChegadaPlaca) { inputChegadaPlaca.value = ''; inputChegadaPlaca.readOnly = true; }
+    if (inputFiscalizacao2) { inputFiscalizacao2.value = ''; inputFiscalizacao2.readOnly = true; }
+    if (inputSaidaPlaca) { inputSaidaPlaca.value = ''; inputSaidaPlaca.readOnly = true; }
+
+    if (inputRoletaInicial) inputRoletaInicial.value = '';
+    if (inputRoletaFinal) inputRoletaFinal.value = '';
+    if (inputRoletaPassageiros) inputRoletaPassageiros.value = '';
+
+    dadosValidadorPorCarro = {};
+    dadosFilipetaPorCarro = {};
+
+    if (containerLinhasRoletas) {
+      containerLinhasRoletas.innerHTML = '';
+      totalLinhasRoletas = 0;
+    }
+
+    document.querySelectorAll('.item-jornada-card--editando').forEach(el => el.classList.remove('item-jornada-card--editando'));
+
+    renderizarSecoesMultiCarro();
+    atualizarRoletasTotaisAutomaticas();
   }
 
   /* --- Helper: Captura todos os dados da etapa atualmente no formulário --- */
@@ -1838,7 +2016,9 @@ function initJornadaModule() {
 
     lista.forEach((item, index) => {
       const cardItem = document.createElement('div');
-      cardItem.className = 'item-jornada-card';
+      cardItem.className = 'item-jornada-card' + (jornadaEmEdicaoIndex === index ? ' item-jornada-card--editando' : '');
+      cardItem.setAttribute('data-index', index);
+      cardItem.setAttribute('title', 'Clique no card para carregar e atualizar informações');
       const temCarro = item.carroNumero || item.carroPlaca || item.carroSigla;
       const temMultiEtapas = item.etapas && Array.isArray(item.etapas) && item.etapas.length > 1;
 
@@ -1879,14 +2059,30 @@ function initJornadaModule() {
           </div>
         `}
       `;
+
+      cardItem.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-excluir-item')) return;
+        preencherFormularioComJornada(item, index);
+        if (form) {
+          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+
       container.appendChild(cardItem);
     });
 
     container.querySelectorAll('.btn-excluir-item').forEach(btn => {
       btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const idx = e.currentTarget.getAttribute('data-index');
+        const idxNum = Number(idx);
+        if (jornadaEmEdicaoIndex === idxNum) {
+          jornadaEmEdicaoIndex = null;
+        } else if (jornadaEmEdicaoIndex !== null && jornadaEmEdicaoIndex > idxNum) {
+          jornadaEmEdicaoIndex--;
+        }
         const listaAtual = carregarJornadas();
-        listaAtual.splice(idx, 1);
+        listaAtual.splice(idxNum, 1);
         salvarJornadas(listaAtual);
         renderizarJornadas();
       });
@@ -2225,64 +2421,193 @@ function initJornadaModule() {
       };
 
       const listaAtual = carregarJornadas();
-      listaAtual.unshift(novaJornada);
-      salvarJornadas(listaAtual);
+      const dataBusca = (novaJornada.data || '').replace(/\D/g, '');
 
-      // Limpa o rascunho persistido offline (dados já foram consolidados no card)
-      limparRascunhoJornada();
-
-      // Reseta estado das etapas
-      etapasJornadaAtiva = [];
-      renderizarEtapasEmAndamento();
-      if (indicadorEtapaAtual) indicadorEtapaAtual.style.display = 'none';
-
-      // Limpa os campos mantendo readonly
-      if (dataInput) dataInput.value = '';
-      if (semanaInput) semanaInput.value = '';
-      if (horaInput) { horaInput.value = ''; horaInput.readOnly = true; }
-      if (matInput) { matInput.value = ''; matInput.readOnly = true; }
-      if (motInput) { motInput.value = ''; motInput.readOnly = true; }
-      if (linhaInput) { linhaInput.value = ''; linhaInput.readOnly = true; }
-      if (linhaNomeInput) linhaNomeInput.value = '';
-      if (carroSiglaInput) { carroSiglaInput.value = ''; carroSiglaInput.readOnly = true; }
-      if (carroNumInput) carroNumInput.value = '';
-      if (carroPlacaInput) { carroPlacaInput.value = ''; carroPlacaInput.readOnly = true; }
-      if (kmPainelInicialInput) kmPainelInicialInput.value = '';
-      if (kmPainelFinalInput) kmPainelFinalInput.value = '';
-      if (kmPainelRodadoInput) kmPainelRodadoInput.value = '';
-      if (kmTacoInicialInput) kmTacoInicialInput.value = '';
-      if (kmTacoFinalInput) kmTacoFinalInput.value = '';
-      if (kmTacoRodadoInput) kmTacoRodadoInput.value = '';
-      if (avariasInput) avariasInput.value = '';
-      if (inputChegadaGaragem) { inputChegadaGaragem.value = ''; inputChegadaGaragem.readOnly = true; }
-      if (inputChegadaPonto1) { inputChegadaPonto1.value = ''; inputChegadaPonto1.readOnly = true; }
-      if (inputChegadaCarro) { inputChegadaCarro.value = ''; inputChegadaCarro.readOnly = true; }
-      if (inputHoraVinculacao) { inputHoraVinculacao.value = ''; inputHoraVinculacao.readOnly = true; }
-      if (inputRoletas) inputRoletas.value = '';
-      if (inputChegadaPonto2) { inputChegadaPonto2.value = ''; inputChegadaPonto2.readOnly = true; }
-      if (inputFiscalizacao1) { inputFiscalizacao1.value = ''; inputFiscalizacao1.readOnly = true; }
-      if (inputSaidaPonto) { inputSaidaPonto.value = ''; inputSaidaPonto.readOnly = true; }
-      if (inputChegadaPlaca) { inputChegadaPlaca.value = ''; inputChegadaPlaca.readOnly = true; }
-      if (inputFiscalizacao2) { inputFiscalizacao2.value = ''; inputFiscalizacao2.readOnly = true; }
-      if (inputSaidaPlaca) { inputSaidaPlaca.value = ''; inputSaidaPlaca.readOnly = true; }
-
-      // Limpa os campos de Roleta Inicial, Final e Passageiros
-      if (inputRoletaInicial) inputRoletaInicial.value = '';
-      if (inputRoletaFinal) inputRoletaFinal.value = '';
-      if (inputRoletaPassageiros) inputRoletaPassageiros.value = '';
-
-      // Limpa dados multi-carro
-      dadosValidadorPorCarro = {};
-      dadosFilipetaPorCarro = {};
-
-      // Limpa as linhas de roletas da tabela após a submissão
-      if (containerLinhasRoletas) {
-        containerLinhasRoletas.innerHTML = '';
-        totalLinhasRoletas = 0;
+      // Localiza se já existe um card correspondente (por índice em edição ou pela data informada)
+      let indexExistente = -1;
+      if (jornadaEmEdicaoIndex !== null && jornadaEmEdicaoIndex >= 0 && jornadaEmEdicaoIndex < listaAtual.length) {
+        indexExistente = jornadaEmEdicaoIndex;
+      } else if (dataBusca) {
+        indexExistente = listaAtual.findIndex(j => {
+          const jData = (j.data || '').replace(/\D/g, '');
+          if (jData !== dataBusca) return false;
+          if (novaJornada.matricula && j.matricula) {
+            return novaJornada.matricula.trim() === j.matricula.trim();
+          }
+          return true;
+        });
       }
 
-      renderizarSecoesMultiCarro();
-      atualizarRoletasTotaisAutomaticas();
+      if (indexExistente !== -1) {
+        // Atualiza a jornada existente preenchendo todos os campos vazios ou em branco com as novas informações
+        const existente = listaAtual[indexExistente];
+
+        const mesclarCampo = (novo, antigo) => {
+          if (novo !== undefined && novo !== null && String(novo).trim() !== '' && String(novo).trim() !== '--') {
+            return novo;
+          }
+          return (antigo !== undefined && antigo !== null) ? antigo : '';
+        };
+
+        const jornadaAtualizada = {
+          semana: mesclarCampo(novaJornada.semana, existente.semana || existente.diaSemana),
+          data: mesclarCampo(novaJornada.data, existente.data),
+          horaPegada: mesclarCampo(novaJornada.horaPegada, existente.horaPegada),
+          matricula: mesclarCampo(novaJornada.matricula, existente.matricula),
+          motorista: mesclarCampo(novaJornada.motorista, existente.motorista),
+          linha: mesclarCampo(novaJornada.linha, existente.linha),
+          linhaNome: mesclarCampo(novaJornada.linhaNome, existente.linhaNome),
+          carroSigla: mesclarCampo(novaJornada.carroSigla, existente.carroSigla),
+          carroNumero: mesclarCampo(novaJornada.carroNumero, existente.carroNumero),
+          carroPlaca: mesclarCampo(novaJornada.carroPlaca, existente.carroPlaca),
+
+          kmPainelInicial: mesclarCampo(novaJornada.kmPainelInicial, existente.kmPainelInicial),
+          kmPainelFinal: mesclarCampo(novaJornada.kmPainelFinal, existente.kmPainelFinal),
+          kmPainelRodado: '',
+
+          kmTacoInicial: mesclarCampo(novaJornada.kmTacoInicial, existente.kmTacoInicial),
+          kmTacoFinal: mesclarCampo(novaJornada.kmTacoFinal, existente.kmTacoFinal),
+          kmTacoRodado: '',
+
+          avarias: mesclarCampo(novaJornada.avarias, existente.avarias),
+
+          chegadaGaragem: mesclarCampo(novaJornada.chegadaGaragem, existente.chegadaGaragem),
+          chegadaPonto1: mesclarCampo(novaJornada.chegadaPonto1, existente.chegadaPonto1),
+          chegadaCarro: mesclarCampo(novaJornada.chegadaCarro, existente.chegadaCarro),
+          horaVinculacao: mesclarCampo(novaJornada.horaVinculacao, existente.horaVinculacao),
+          roletas: mesclarCampo(novaJornada.roletas, existente.roletas),
+          chegadaPonto2: mesclarCampo(novaJornada.chegadaPonto2, existente.chegadaPonto2),
+          fiscalizacao1: mesclarCampo(novaJornada.fiscalizacao1, existente.fiscalizacao1),
+          saidaPonto: mesclarCampo(novaJornada.saidaPonto, existente.saidaPonto),
+          chegadaPlaca: mesclarCampo(novaJornada.chegadaPlaca, existente.chegadaPlaca),
+          fiscalizacao2: mesclarCampo(novaJornada.fiscalizacao2, existente.fiscalizacao2),
+          saidaPlaca: mesclarCampo(novaJornada.saidaPlaca, existente.saidaPlaca),
+
+          roletaInicial: mesclarCampo(novaJornada.roletaInicial, existente.roletaInicial),
+          roletaFinal: mesclarCampo(novaJornada.roletaFinal, existente.roletaFinal),
+          roletaPassageiros: '',
+
+          validador: {
+            carro: mesclarCampo(novaJornada.validador?.carro, existente.validador?.carro || existente.carroNumero),
+            gratuidade: mesclarCampo(novaJornada.validador?.gratuidade, existente.validador?.gratuidade),
+            valesTransporte: mesclarCampo(novaJornada.validador?.valesTransporte, existente.validador?.valesTransporte),
+            qrCode: mesclarCampo(novaJornada.validador?.qrCode, existente.validador?.qrCode)
+          },
+
+          filipeta: {
+            carro: mesclarCampo(novaJornada.filipeta?.carro, existente.filipeta?.carro || existente.carroNumero),
+            coleta: mesclarCampo(novaJornada.filipeta?.coleta, existente.filipeta?.coleta),
+            pagantes: mesclarCampo(novaJornada.filipeta?.pagantes, existente.filipeta?.pagantes),
+            gratuidades: mesclarCampo(novaJornada.filipeta?.gratuidades, existente.filipeta?.gratuidades),
+            valesTransporte: mesclarCampo(novaJornada.filipeta?.valesTransporte, existente.filipeta?.valesTransporte),
+            passageiros: mesclarCampo(novaJornada.filipeta?.passageiros, existente.filipeta?.passageiros)
+          }
+        };
+
+        // Recalcular KM Painel Rodado se inicial e final estiverem preenchidos
+        if (jornadaAtualizada.kmPainelInicial && jornadaAtualizada.kmPainelFinal) {
+          const iniP = parseFloat(String(jornadaAtualizada.kmPainelInicial).replace(/\D/g, ''));
+          const fimP = parseFloat(String(jornadaAtualizada.kmPainelFinal).replace(/\D/g, ''));
+          if (!isNaN(iniP) && !isNaN(fimP) && fimP >= iniP) {
+            jornadaAtualizada.kmPainelRodado = String(fimP - iniP);
+          } else {
+            jornadaAtualizada.kmPainelRodado = mesclarCampo(novaJornada.kmPainelRodado, existente.kmPainelRodado);
+          }
+        } else {
+          jornadaAtualizada.kmPainelRodado = mesclarCampo(novaJornada.kmPainelRodado, existente.kmPainelRodado);
+        }
+
+        // Recalcular KM Taco Rodado se inicial e final estiverem preenchidos
+        if (jornadaAtualizada.kmTacoInicial && jornadaAtualizada.kmTacoFinal) {
+          const iniT = parseFloat(String(jornadaAtualizada.kmTacoInicial).replace(/\D/g, ''));
+          const fimT = parseFloat(String(jornadaAtualizada.kmTacoFinal).replace(/\D/g, ''));
+          if (!isNaN(iniT) && !isNaN(fimT) && fimT >= iniT) {
+            jornadaAtualizada.kmTacoRodado = String(fimT - iniT);
+          } else {
+            jornadaAtualizada.kmTacoRodado = mesclarCampo(novaJornada.kmTacoRodado, existente.kmTacoRodado);
+          }
+        } else {
+          jornadaAtualizada.kmTacoRodado = mesclarCampo(novaJornada.kmTacoRodado, existente.kmTacoRodado);
+        }
+
+        // Recalcular Passageiros Roleta se inicial e final estiverem preenchidos
+        if (jornadaAtualizada.roletaInicial && jornadaAtualizada.roletaFinal) {
+          const iniR = parseFloat(String(jornadaAtualizada.roletaInicial).replace(/\D/g, ''));
+          const fimR = parseFloat(String(jornadaAtualizada.roletaFinal).replace(/\D/g, ''));
+          if (!isNaN(iniR) && !isNaN(fimR) && fimR >= iniR) {
+            jornadaAtualizada.roletaPassageiros = String(fimR - iniR);
+          } else {
+            jornadaAtualizada.roletaPassageiros = mesclarCampo(novaJornada.roletaPassageiros, existente.roletaPassageiros);
+          }
+        } else {
+          jornadaAtualizada.roletaPassageiros = mesclarCampo(novaJornada.roletaPassageiros, existente.roletaPassageiros);
+        }
+
+        // Recalcular Passageiros Filipeta se estiver vazio
+        if (!jornadaAtualizada.filipeta.passageiros && (jornadaAtualizada.filipeta.pagantes || jornadaAtualizada.filipeta.gratuidades || jornadaAtualizada.filipeta.valesTransporte)) {
+          const pag = parseFloat(String(jornadaAtualizada.filipeta.pagantes || '').replace(/\D/g, '')) || 0;
+          const gra = parseFloat(String(jornadaAtualizada.filipeta.gratuidades || '').replace(/\D/g, '')) || 0;
+          const val = parseFloat(String(jornadaAtualizada.filipeta.valesTransporte || '').replace(/\D/g, '')) || 0;
+          const totalFil = pag + gra + val;
+          if (totalFil > 0) {
+            jornadaAtualizada.filipeta.passageiros = String(totalFil);
+          }
+        }
+
+        // Sessões de viagem
+        if (Array.isArray(novaJornada.sessoes) && novaJornada.sessoes.length > 0) {
+          jornadaAtualizada.sessoes = novaJornada.sessoes;
+        } else if (Array.isArray(existente.sessoes) && existente.sessoes.length > 0) {
+          jornadaAtualizada.sessoes = existente.sessoes;
+        } else {
+          jornadaAtualizada.sessoes = [];
+        }
+
+        // Etapas
+        if (Array.isArray(novaJornada.etapas) && novaJornada.etapas.length > 0) {
+          if (Array.isArray(existente.etapas) && existente.etapas.length > 0) {
+            jornadaAtualizada.etapas = novaJornada.etapas.map((etapaNova, i) => {
+              const etapaAntiga = existente.etapas.find(ea => ea.numeroEtapa === etapaNova.numeroEtapa || ea.carroNumero === etapaNova.carroNumero) || existente.etapas[i];
+              if (!etapaAntiga) return etapaNova;
+              const etapaMesclada = { ...etapaAntiga };
+              Object.keys(etapaNova).forEach(k => {
+                etapaMesclada[k] = mesclarCampo(etapaNova[k], etapaAntiga[k]);
+              });
+              return etapaMesclada;
+            });
+          } else {
+            jornadaAtualizada.etapas = novaJornada.etapas;
+          }
+        } else if (Array.isArray(existente.etapas) && existente.etapas.length > 0) {
+          jornadaAtualizada.etapas = existente.etapas.map((etapaAntiga, idx) => {
+            if (idx === existente.etapas.length - 1 || etapaAntiga.carroNumero === jornadaAtualizada.carroNumero) {
+              const etapaMesclada = { ...etapaAntiga };
+              Object.keys(etapaFinal).forEach(k => {
+                etapaMesclada[k] = mesclarCampo(etapaFinal[k], etapaAntiga[k]);
+              });
+              return etapaMesclada;
+            }
+            return etapaAntiga;
+          });
+        } else {
+          jornadaAtualizada.etapas = [];
+        }
+
+        listaAtual[indexExistente] = jornadaAtualizada;
+        salvarJornadas(listaAtual);
+      } else {
+        // Novo registro: insere no topo
+        listaAtual.unshift(novaJornada);
+        salvarJornadas(listaAtual);
+      }
+
+      // Limpa o rascunho persistido offline
+      limparRascunhoJornada();
+
+      // Reseta e limpa o formulário de forma centralizada
+      resetarFormularioJornada();
+
+      // Atualiza os cards em tela
       renderizarJornadas();
     });
   }
@@ -2346,6 +2671,8 @@ function initJornadaModule() {
     const raw = dataInput.value.replace(/\D/g, '');
     if (!raw || raw.length < 6) {
       limparCamposDerivados(true);
+      jornadaEmEdicaoIndex = null;
+      document.querySelectorAll('.item-jornada-card--editando').forEach(el => el.classList.remove('item-jornada-card--editando'));
       salvarRascunhoJornada();
       return;
     }
@@ -2364,6 +2691,8 @@ function initJornadaModule() {
       ano = '20' + raw.slice(4, 6);
     } else {
       limparCamposDerivados(true);
+      jornadaEmEdicaoIndex = null;
+      document.querySelectorAll('.item-jornada-card--editando').forEach(el => el.classList.remove('item-jornada-card--editando'));
       salvarRascunhoJornada();
       return;
     }
@@ -2381,7 +2710,20 @@ function initJornadaModule() {
       semanaInput.value = '';
     }
 
-    // Busca dados da escala pela data formatada (se houver, preenche; se não, mantém a data digitada)
+    // 1. Verifica se já existe uma jornada registrada nos cards para esta data
+    const listaJornadas = carregarJornadas();
+    const dataBusca = dataFormatada.replace(/\D/g, '');
+    const idxExistente = listaJornadas.findIndex(j => (j.data || '').replace(/\D/g, '') === dataBusca);
+
+    if (idxExistente !== -1) {
+      // Carrega os dados existentes no formulário para completar os campos vazios ou em branco
+      preencherFormularioComJornada(listaJornadas[idxExistente], idxExistente);
+      return;
+    }
+
+    // 2. Se não houver jornada cadastrada, busca dados da escala pela data formatada
+    jornadaEmEdicaoIndex = null;
+    document.querySelectorAll('.item-jornada-card--editando').forEach(el => el.classList.remove('item-jornada-card--editando'));
     buscarEscalaPorData(dataFormatada);
     salvarRascunhoJornada();
   }
@@ -2445,6 +2787,8 @@ function initJornadaModule() {
     let val = dataInput.value.replace(/\D/g, '');
     if (!val || val.length === 0) {
       limparCamposDerivados(true);
+      jornadaEmEdicaoIndex = null;
+      document.querySelectorAll('.item-jornada-card--editando').forEach(el => el.classList.remove('item-jornada-card--editando'));
       dataInput.value = '';
       return;
     }
