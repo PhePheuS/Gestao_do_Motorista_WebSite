@@ -1463,7 +1463,7 @@ body {
 
 .form-jornada-row--validador {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
   width: 100%;
 }
@@ -1521,7 +1521,7 @@ body {
 
 .item-jornada-row--validador {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
   width: 100%;
 }
@@ -1978,6 +1978,667 @@ body {
 
 .dado-escala.col-carro-numero-dado {
   text-transform: uppercase;
+}
+
+/* ============================================================
+   10e. MÓDULO AVARIAS — Formulário e Itens
+   ============================================================ */
+
+/* Linha do formulário de cadastro de avarias (Data + Nº Carro + Descrição) */
+.form-avarias-row {
+  display: grid;
+  grid-template-columns: 110px 90px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Card de cada avaria cadastrada */
+.item-avaria-card {
+  display: grid;
+  grid-template-columns: 110px 90px 1fr 28px;
+  gap: 8px;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+.dado-escala.col-avaria-data-dado {
+  color: #00aaff;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+}
+
+.dado-escala.col-avaria-carro-dado {
+  color: #ffa500;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+  text-transform: uppercase;
+}
+
+.dado-escala.col-avaria-descricao-dado {
+  color: #ffffff;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.col-avaria-carro {
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   10f. SISTEMA INTERATIVO DE ANOTAÇÃO DE AVARIAS POR CLIQUE
+   ============================================================ */
+
+/* Painel de Resumo de Avarias Selecionadas */
+/* Barra de Seleção Rápida de Carros da Jornada (com suporte a Trocas) */
+.avarias-trocas-carro-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 170, 255, 0.08);
+  border: 1px dashed rgba(0, 170, 255, 0.35);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.troca-carro-aviso-rotulo {
+  color: #00aaff;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.troca-carro-botoes-grupo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn-troca-carro-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-troca-carro-chip:hover {
+  background: rgba(0, 170, 255, 0.2);
+  border-color: #00aaff;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-troca-carro-chip.is-active {
+  background: #00aaff !important;
+  border-color: #00aaff !important;
+  color: #000000 !important;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+}
+
+.avarias-selecionadas-painel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.avarias-selecionadas-rotulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #a0a0a0;
+  font-weight: 500;
+}
+
+.avarias-selecionadas-rotulo strong {
+  background-color: #00aaff;
+  color: #000000;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.avarias-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-height: 24px;
+}
+
+.avarias-tag-empty {
+  color: #777777;
+  font-style: italic;
+  font-size: 0.8rem;
+}
+
+.avaria-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(255, 109, 0, 0.2);
+  border: 1px solid #ff6d00;
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-family: var(--font-family-mono);
+  font-weight: 600;
+  animation: fadeInTag 0.2s ease-out;
+}
+
+.avaria-tag-chip__remove {
+  background: none;
+  border: none;
+  color: #ffab40;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  line-height: 1;
+  font-weight: bold;
+}
+
+.avaria-tag-chip__remove:hover {
+  color: #ffffff;
+}
+
+.btn-limpar-avarias {
+  background-color: rgba(255, 68, 68, 0.15);
+  border: 1px solid rgba(255, 68, 68, 0.4);
+  color: #ff5252;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.btn-limpar-avarias:hover {
+  background-color: rgba(255, 68, 68, 0.3);
+  color: #ffffff;
+}
+
+/* Card do Diagrama do Ônibus */
+.card--diagrama-avarias {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(20, 24, 33, 0.95) 0%, rgba(12, 16, 24, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Top Controles: Seleção de Modelo e Atalhos */
+.avarias-top-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.avarias-modelo-seletor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.controle-rotulo {
+  color: #8e99a8;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.btn-modelo-onibus {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #c0c6d0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-modelo-onibus:hover {
+  background-color: rgba(0, 170, 255, 0.15);
+  border-color: rgba(0, 170, 255, 0.4);
+  color: #ffffff;
+}
+
+.btn-modelo-onibus.is-active {
+  background-color: #00aaff;
+  border-color: #00aaff;
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.4);
+}
+
+.avarias-atalhos-rapidos {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-atalho-avaria {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.btn-atalho--sem-avaria {
+  background-color: rgba(0, 230, 118, 0.15);
+  border-color: #00e676;
+  color: #00e676;
+}
+
+.btn-atalho--sem-avaria:hover,
+.btn-atalho--sem-avaria.is-active {
+  background-color: #00e676;
+  color: #000000;
+  box-shadow: 0 0 14px rgba(0, 230, 118, 0.5);
+}
+
+.btn-atalho--nao-passou {
+  background-color: rgba(255, 179, 0, 0.15);
+  border-color: #ffb300;
+  color: #ffb300;
+}
+
+.btn-atalho--nao-passou:hover,
+.btn-atalho--nao-passou.is-active {
+  background-color: #ffb300;
+  color: #000000;
+  box-shadow: 0 0 14px rgba(255, 179, 0, 0.5);
+}
+
+/* Abas de Vistas do Ônibus (Organizadas em 3 Linhas) */
+.avarias-vistas-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.avarias-vistas-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+
+.avarias-vistas-row--full {
+  grid-template-columns: 1fr;
+}
+
+.avaria-tab-btn {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a0aec0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: normal;
+  text-align: center;
+  transition: all 0.2s ease;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avaria-tab-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.avaria-tab-btn.is-active {
+  background-color: rgba(0, 170, 255, 0.15);
+  border-color: #00aaff;
+  color: #00aaff;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.25);
+}
+
+.avaria-tab-btn--full {
+  width: 100%;
+  padding: 10px 14px;
+}
+
+/* Barra de Instrução */
+.avarias-instrucao-barra {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #8c9ba5;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.legenda-cores {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dot-legenda {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot--amassado {
+  background-color: #ff3d00;
+}
+
+.dot--raspado {
+  background-color: #ffb300;
+}
+
+/* Área do Diagrama */
+.avarias-vistas-content {
+  width: 100%;
+  min-height: 280px;
+  position: relative;
+}
+
+/* Esquema Gráfico do Ônibus - 100% visível sem rolagem horizontal */
+.onibus-esquema-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #0b0e14;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.onibus-esquema-titulo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+}
+
+.onibus-svg-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 4px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.onibus-svg-container svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Grid de Botões de Avarias por Seção (Exibição Completa sem Abreviações) */
+.grid-avarias-secoes {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.grid-avarias-secoes--lateral {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.grid-avarias-secoes--frontal {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.secao-avaria-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.secao-avaria-box__header {
+  font-size: 0.75rem;
+  color: #00aaff;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
+}
+
+.secao-avaria-box__botoes {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Botão Chip de Avaria com Nome Completo Oficial */
+.btn-avaria-chip {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-family: var(--font-family-mono);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.btn-avaria-chip:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-avaria-chip.is-active {
+  background-color: #ff6d00 !important;
+  border-color: #ff6d00 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(255, 109, 0, 0.6);
+}
+
+.btn-avaria-chip .chip-num {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #00aaff;
+  flex-shrink: 0;
+}
+
+.btn-avaria-chip.is-active .chip-num {
+  background: rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+}
+
+.btn-avaria-chip .chip-label {
+  font-size: 0.76rem;
+  font-family: var(--font-family-sans);
+  flex: 1;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* Painel de Lista Completa de Códigos (1 a 144) */
+.lista-completa-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lista-completa-busca {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.lista-completa-busca:focus {
+  border-color: #00aaff;
+  box-shadow: 0 0 8px rgba(0, 170, 255, 0.3);
+}
+
+.lista-completa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 6px;
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.item-codigo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.item-codigo-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.item-codigo-card.is-active {
+  background: rgba(255, 109, 0, 0.15);
+  border-color: #ff6d00;
+}
+
+.item-codigo-card__cod {
+  background-color: #00aaff;
+  color: #000000;
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.item-codigo-card.is-active .item-codigo-card__cod {
+  background-color: #ff6d00;
+  color: #ffffff;
+}
+
+.item-codigo-card__nome {
+  flex: 1;
+  font-size: 0.78rem;
+  color: #d1d5db;
+}
+
+.card-base-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.card-base-titulo {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #00aaff;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@keyframes fadeInTag {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Wrapper do Formulário: empilha as duas linhas */

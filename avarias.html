@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <!--
+    ============================================================
+    CONTROLE DO MOTORISTA — Sistema Profissional de Gestão
+    Arquivo: avarias.html (Módulo de Avarias Interativo)
+    Descrição: Registro e anotação visual de avarias nos veículos
+               através de diagramas esquemáticos interativos por clique.
+    Arquitetura: Jamstack / GitHub Pages (100% estático)
+    ============================================================
+  -->
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <meta name="description" content="Módulo de Avarias Interativo — Controle do Motorista. Gestor Motorista." />
+  <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Avarias" />
+
+  <title>Controle do Motorista — Avarias</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ============================================================
+       CABEÇALHO PRINCIPAL — Identidade, Data/Hora e Navegação
+       ============================================================ -->
+  <header class="app-header" role="banner">
+
+    <!-- Título Principal -->
+    <h1 class="app-title">Controle do Motorista</h1>
+
+    <!-- Subtítulo: branco, centralizado -->
+    <p class="app-subtitle">Sistema Profissional de Gestão</p>
+
+    <!-- Linha de Informações: Data e Hora Lado a Lado -->
+    <div class="datetime-container">
+      <span class="app-date" id="dataAtual" aria-label="Data atual">--</span>
+      <span class="datetime-separator" aria-hidden="true">•</span>
+      <div class="clock-container" id="clockContainer" role="timer" aria-live="off" aria-label="Relógio do sistema anti-fraude">
+        <div class="clock-display" id="clockDisplay" aria-label="Horário atual">
+          <span class="clock-segment" id="clockHours">--</span>
+          <span class="clock-separator" aria-hidden="true">:</span>
+          <span class="clock-segment" id="clockMinutes">--</span>
+          <span class="clock-separator" aria-hidden="true">:</span>
+          <span class="clock-segment clock-segment--seconds" id="clockSeconds">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações e Destaque do Topo: Linha 1 (Avarias), Linha 2 (Voltar, Inserir) -->
+    <div class="selected-badge-container" id="selectedBadgeContainer" aria-live="polite">
+      <span class="selected-badge" id="selectedBadge">AVARIAS</span>
+      <div class="topo-acoes-linha">
+        <a href="index.html" class="btn-voltar-topo" id="btnVoltarTopo" aria-label="Voltar para a tela inicial">
+          VOLTAR
+        </a>
+        <button type="submit" form="formInserirAvaria" class="btn-inserir-topo" id="btnInserirAvaria" aria-label="Inserir avaria">
+          INSERIR
+        </button>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- ============================================================
+       SEÇÃO PRINCIPAL — Formulário e Diagrama de Avarias
+       ============================================================ -->
+  <main class="cards-container" id="cardsContainer" role="main">
+
+    <!-- Barra de Campos: Data, Carro, Descrição da Avaria -->
+    <section class="barra-inserir-container" aria-label="Campos de cadastro de avarias">
+      <form id="formInserirAvaria" class="form-escala-wrapper">
+        <div class="form-escala-row form-avarias-row">
+          <input type="text" id="inputAvariaData" class="input-escala col-avaria-data" placeholder="Data" maxlength="10" />
+          <input type="text" id="inputAvariaCarro" class="input-escala col-avaria-carro" placeholder="N° Carro" maxlength="15" list="listaCarrosJornadaDatalist" autocomplete="off" required />
+          <datalist id="listaCarrosJornadaDatalist"></datalist>
+          <input type="text" id="inputAvariaDescricao" class="input-escala col-avaria-descricao" placeholder="Avarias selecionadas aparecerão aqui..." readonly required />
+        </div>
+
+        <!-- Seletor Rápido de Carros da Jornada (quando houver trocas de carro/linha) -->
+        <div id="containerTrocasCarroJornada" class="avarias-trocas-carro-container" style="display: none;"></div>
+
+        <!-- Barra de resumo das avarias selecionadas e botão de limpeza rápida -->
+        <div class="avarias-selecionadas-painel" id="painelAvariasSelecionadas">
+          <div class="avarias-selecionadas-rotulo">
+            <span>Avarias marcadas:</span>
+            <strong id="contadorAvarias">0</strong>
+          </div>
+          <div class="avarias-tags-container" id="containerTagsAvarias">
+            <span class="avarias-tag-empty">Nenhuma avaria marcada no ônibus.</span>
+          </div>
+          <button type="button" class="btn-limpar-avarias" id="btnLimparAvarias" title="Desmarcar todas as avarias">
+            Limpar
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ============================================================
+         DIAGRAMA VISUAL E INTERATIVO DO ÔNIBUS
+         ============================================================ -->
+    <section class="card card--diagrama-avarias" aria-label="Diagrama interativo do ônibus">
+
+      <!-- Seletor de Modelo de Ônibus (6 Chapas vs 7 Chapas) e Atalhos Rápidos -->
+      <div class="avarias-top-controles">
+        <div class="avarias-modelo-seletor">
+          <span class="controle-rotulo">Modelo:</span>
+          <button type="button" class="btn-modelo-onibus is-active" id="btnModelo1" data-modelo="1">
+            Ônibus 6 Chapas (Médio)
+          </button>
+          <button type="button" class="btn-modelo-onibus" id="btnModelo2" data-modelo="2">
+            Ônibus 7 Chapas (Longo)
+          </button>
+        </div>
+
+        <!-- Atalhos rápidos 143 (Sem Avarias) e 144 (Mot Não Passou) -->
+        <div class="avarias-atalhos-rapidos">
+          <button type="button" class="btn-atalho-avaria btn-atalho--sem-avaria" id="btnAtalho143" data-cod="143">
+            [143] SEM AVARIAS
+          </button>
+          <button type="button" class="btn-atalho-avaria btn-atalho--nao-passou" id="btnAtalho144" data-cod="144">
+            [144] MOT NÃO PASSOU
+          </button>
+        </div>
+      </div>
+
+      <!-- Abas de Vistas: Linha 1 (L/D e L/E), Linha 2 (Frente e Fundo), Linha 3 (1 ao 144) -->
+      <nav class="avarias-vistas-grid" role="tablist" aria-label="Vistas do ônibus">
+        <div class="avarias-vistas-row">
+          <button type="button" class="avaria-tab-btn is-active" id="tabLadoDireito" data-vista="LD" role="tab" aria-selected="true">
+            Lado Direito ( Porta L/D )
+          </button>
+          <button type="button" class="avaria-tab-btn" id="tabLadoEsquerdo" data-vista="LE" role="tab" aria-selected="false">
+            Lado Esquerdo ( Porta L/E )
+          </button>
+        </div>
+        <div class="avarias-vistas-row">
+          <button type="button" class="avaria-tab-btn" id="tabDianteira" data-vista="DIAN" role="tab" aria-selected="false">
+            Dianteira ( Frente )
+          </button>
+          <button type="button" class="avaria-tab-btn" id="tabTraseira" data-vista="TRAS" role="tab" aria-selected="false">
+            Traseira ( Fundo )
+          </button>
+        </div>
+        <div class="avarias-vistas-row avarias-vistas-row--full">
+          <button type="button" class="avaria-tab-btn avaria-tab-btn--full" id="tabListaCompleta" data-vista="LISTA" role="tab" aria-selected="false">
+            Todos os Códigos ( 1 ao 144 )
+          </button>
+        </div>
+      </nav>
+
+      <!-- Instrução de Apoio ao Motorista -->
+      <div class="avarias-instrucao-barra">
+        <span>Toque no número da avaria correspondente à região do ônibus:</span>
+        <span class="legenda-cores">
+          <span class="legenda-item"><span class="dot-legenda dot--amassado"></span> Amassado/Quebrado</span>
+          <span class="legenda-item"><span class="dot-legenda dot--raspado"></span> Raspado/Trincado</span>
+        </span>
+      </div>
+
+      <!-- CONTAINER DINÂMICO DAS VISTAS DO ÔNIBUS -->
+      <div class="avarias-vistas-content" id="containerVistasAvarias">
+        <!-- Injetado dinamicamente via script.js -->
+      </div>
+
+    </section>
+
+    <!-- CARD BASE — Onde as avarias cadastradas serão exibidas -->
+    <article class="card card--base card--escala" id="cardBase" aria-label="Módulo de Avarias">
+      <div class="card-base-header">
+        <h2 class="card-base-titulo">Histórico de Avarias Registradas</h2>
+      </div>
+      <div id="listaAvariasContainer" class="lista-escala-container">
+        <!-- Itens inseridos aparecem aqui -->
+      </div>
+    </article>
+
+  </main>
+
+  <!-- ============================================================
+       RODAPÉ DA APLICAÇÃO
+       ============================================================ -->
+  <footer class="app-footer" role="contentinfo">
+    <p class="app-footer__text">
+      &copy; <span id="footerYear"></span> Gestor Motorista —
+      <span class="app-footer__version">v2.33.0</span>
+    </p>
+  </footer>
+
+  <!-- ============================================================
+       IMPORTAÇÃO DOS SCRIPTS MODULARES
+       ============================================================ -->
+  <script src="versao.js" defer></script>
+  <script src="relogio.js" defer></script>
+  <script src="script.js" defer></script>
+
+</body>
+
+</html>

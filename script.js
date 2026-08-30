@@ -911,6 +911,7 @@ function initCarrosModule() {
 
     const listaOrdenada = ordenarCarros(listaAtual);
     localStorage.setItem(CARROS_STORAGE_KEY, JSON.stringify(listaOrdenada));
+    localStorage.setItem('controle_motorista_ultimo_carro', novoCarro.numero);
 
     if (siglaInput) siglaInput.value = '';
     if (numInput) numInput.value = '';
@@ -920,6 +921,1418 @@ function initCarrosModule() {
   });
 
   renderizarCarros();
+}
+
+
+/* ============================================================
+   MÓDULO 7b: CADASTRO E CONTROLE DE AVARIAS INTERATIVO (avarias.html)
+   Tabela Oficial dos 144 Códigos de Avarias por Clique no Ônibus
+   ============================================================ */
+
+const AVARIAS_STORAGE_KEY = 'controle_motorista_avarias';
+
+const TABELA_AVARIAS_144 = [
+  { cod: 1, nome: 'PONTEIRA DIANT. "E" QUEBRADA', lado: 'E', sec: 'ponteira_diant', tipo: 'quebrada' },
+  { cod: 2, nome: 'PONTEIRA DIANT. "D" QUEBRADA', lado: 'D', sec: 'ponteira_diant', tipo: 'quebrada' },
+  { cod: 3, nome: 'PONTEIRA DIANT. "E" RASPADA', lado: 'E', sec: 'ponteira_diant', tipo: 'raspada' },
+  { cod: 4, nome: 'PONTEIRA DIANT. "D" RASPADA', lado: 'D', sec: 'ponteira_diant', tipo: 'raspada' },
+  { cod: 5, nome: 'PONTEIRA TRAS. "E" QUEBRADA', lado: 'E', sec: 'ponteira_tras', tipo: 'quebrada' },
+  { cod: 6, nome: 'PONTEIRA TRAS. "D" QUEBRADA', lado: 'D', sec: 'ponteira_tras', tipo: 'quebrada' },
+  { cod: 7, nome: 'PONTEIRA TRAS. "E" RASPADA', lado: 'E', sec: 'ponteira_tras', tipo: 'raspada' },
+  { cod: 8, nome: 'PONTEIRA TRAS. "D" RASPADA', lado: 'D', sec: 'ponteira_tras', tipo: 'raspada' },
+  { cod: 9, nome: 'COLUNA DIANT. "E" QUEBRADA', lado: 'E', sec: 'coluna_diant', tipo: 'quebrada' },
+  { cod: 10, nome: 'COLUNA DIANT. "D" QUEBRADA', lado: 'D', sec: 'coluna_diant', tipo: 'quebrada' },
+  { cod: 11, nome: 'COLUNA DIANT. "E" RASPADA', lado: 'E', sec: 'coluna_diant', tipo: 'raspada' },
+  { cod: 12, nome: 'COLUNA DIANT. "D" RASPADA', lado: 'D', sec: 'coluna_diant', tipo: 'raspada' },
+  { cod: 13, nome: 'COLUNA SUP. DIAN. "E" QUEBRADA', lado: 'E', sec: 'coluna_diant', tipo: 'quebrada' },
+  { cod: 14, nome: 'COLUNA SUP. DIAN. "D" QUEBRADA', lado: 'D', sec: 'coluna_diant', tipo: 'quebrada' },
+  { cod: 15, nome: 'COLUNA SUP. DIAN. "E" RASPADA', lado: 'E', sec: 'coluna_diant', tipo: 'raspada' },
+  { cod: 16, nome: 'COLUNA SUP. DIAN. "D" RASPADA', lado: 'D', sec: 'coluna_diant', tipo: 'raspada' },
+  { cod: 17, nome: 'COLUNA TRAS. "E" QUEBRADA', lado: 'E', sec: 'coluna_tras', tipo: 'quebrada' },
+  { cod: 18, nome: 'COLUNA TRAS. "D" QUEBRADA', lado: 'D', sec: 'coluna_tras', tipo: 'quebrada' },
+  { cod: 19, nome: 'COLUNA TRAS. "E" RASPADA', lado: 'E', sec: 'coluna_tras', tipo: 'raspada' },
+  { cod: 20, nome: 'COLUNA TRAS. "D" RASPADA', lado: 'D', sec: 'coluna_tras', tipo: 'raspada' },
+  { cod: 21, nome: 'COLUNA SUP. TRAS. "E" QUEBRADA', lado: 'E', sec: 'coluna_tras', tipo: 'quebrada' },
+  { cod: 22, nome: 'COLUNA SUP. TRAS. "D" QUEBRADA', lado: 'D', sec: 'coluna_tras', tipo: 'quebrada' },
+  { cod: 23, nome: 'COLUNA SUP. TRAS. "E" RASPADA', lado: 'E', sec: 'coluna_tras', tipo: 'raspada' },
+  { cod: 24, nome: 'COLUNA SUP. TRAS. "D" RASPADA', lado: 'D', sec: 'coluna_tras', tipo: 'raspada' },
+  { cod: 25, nome: 'PARABRISA "E" TRINCADO', lado: 'E', sec: 'parabrisa', tipo: 'trincado' },
+  { cod: 26, nome: 'PARABRISA "D" TRINCADO', lado: 'D', sec: 'parabrisa', tipo: 'trincado' },
+  { cod: 27, nome: '1ª CHAPA "E" AMASSADA', lado: 'E', sec: 'chapa_1', tipo: 'amassada' },
+  { cod: 28, nome: '1ª CHAPA "D" AMASSADA', lado: 'D', sec: 'chapa_1', tipo: 'amassada' },
+  { cod: 29, nome: '1ª CHAPA "E" RASPADA', lado: 'E', sec: 'chapa_1', tipo: 'raspada' },
+  { cod: 30, nome: '1ª CHAPA "D" RASPADA', lado: 'D', sec: 'chapa_1', tipo: 'raspada' },
+  { cod: 31, nome: '1ª SAIA "E" AMASSADA', lado: 'E', sec: 'saia_1', tipo: 'amassada' },
+  { cod: 32, nome: '1ª SAIA "D" AMASSADA', lado: 'D', sec: 'saia_1', tipo: 'amassada' },
+  { cod: 33, nome: '1ª SAIA "E" RASPADA', lado: 'E', sec: 'saia_1', tipo: 'raspada' },
+  { cod: 34, nome: '1ª SAIA "D" RASPADA', lado: 'D', sec: 'saia_1', tipo: 'raspada' },
+  { cod: 35, nome: '2ª CHAPA "E" AMASSADA', lado: 'E', sec: 'chapa_2', tipo: 'amassada' },
+  { cod: 36, nome: '2ª CHAPA "D" AMASSADA', lado: 'D', sec: 'chapa_2', tipo: 'amassada' },
+  { cod: 37, nome: '2ª CHAPA "E" RASPADA', lado: 'E', sec: 'chapa_2', tipo: 'raspada' },
+  { cod: 38, nome: '2ª CHAPA "D" RASPADA', lado: 'D', sec: 'chapa_2', tipo: 'raspada' },
+  { cod: 39, nome: '2ª SAIA "E" AMASSADA', lado: 'E', sec: 'saia_2', tipo: 'amassada' },
+  { cod: 40, nome: '2ª SAIA "D" AMASSADA', lado: 'D', sec: 'saia_2', tipo: 'amassada' },
+  { cod: 41, nome: '2ª SAIA "E" RASPADA', lado: 'E', sec: 'saia_2', tipo: 'raspada' },
+  { cod: 42, nome: '2ª SAIA "D" RASPADA', lado: 'D', sec: 'saia_2', tipo: 'raspada' },
+  { cod: 43, nome: '3ª CHAPA "E" AMASSADA', lado: 'E', sec: 'chapa_3', tipo: 'amassada' },
+  { cod: 44, nome: '3ª CHAPA "D" AMASSADA', lado: 'D', sec: 'chapa_3', tipo: 'amassada' },
+  { cod: 45, nome: '3ª CHAPA "E" RASPADA', lado: 'E', sec: 'chapa_3', tipo: 'raspada' },
+  { cod: 46, nome: '3ª CHAPA "D" RASPADA', lado: 'D', sec: 'chapa_3', tipo: 'raspada' },
+  { cod: 47, nome: '3ª SAIA "E" AMASSADA', lado: 'E', sec: 'saia_3', tipo: 'amassada' },
+  { cod: 48, nome: '3ª SAIA "D" AMASSADA', lado: 'D', sec: 'saia_3', tipo: 'amassada' },
+  { cod: 49, nome: '3ª SAIA "E" RASPADA', lado: 'E', sec: 'saia_3', tipo: 'raspada' },
+  { cod: 50, nome: '3ª SAIA "D" RASPADA', lado: 'D', sec: 'saia_3', tipo: 'raspada' },
+  { cod: 51, nome: '4ª CHAPA "E" AMASSADA', lado: 'E', sec: 'chapa_4', tipo: 'amassada' },
+  { cod: 52, nome: '4ª CHAPA "D" AMASSADA', lado: 'D', sec: 'chapa_4', tipo: 'amassada' },
+  { cod: 53, nome: '4ª CHAPA "E" RASPADA', lado: 'E', sec: 'chapa_4', tipo: 'raspada' },
+  { cod: 54, nome: '4ª CHAPA "D" RASPADA', lado: 'D', sec: 'chapa_4', tipo: 'raspada' },
+  { cod: 55, nome: '4ª SAIA "E" AMASSADA', lado: 'E', sec: 'saia_4', tipo: 'amassada' },
+  { cod: 56, nome: '4ª SAIA "D" AMASSADA', lado: 'D', sec: 'saia_4', tipo: 'amassada' },
+  { cod: 57, nome: '4ª SAIA "E" RASPADA', lado: 'E', sec: 'saia_4', tipo: 'raspada' },
+  { cod: 58, nome: '4ª SAIA "D" RASPADA', lado: 'D', sec: 'saia_4', tipo: 'raspada' },
+  { cod: 59, nome: '5ª CHAPA "E" AMASSADA', lado: 'E', sec: 'chapa_5', tipo: 'amassada' },
+  { cod: 60, nome: '5ª CHAPA "D" AMASSADA', lado: 'D', sec: 'chapa_5', tipo: 'amassada' },
+  { cod: 61, nome: '5ª CHAPA "E" RASPADA', lado: 'E', sec: 'chapa_5', tipo: 'raspada' },
+  { cod: 62, nome: '5ª CHAPA "D" RASPADA', lado: 'D', sec: 'chapa_5', tipo: 'raspada' },
+  { cod: 63, nome: '5ª SAIA "E" AMASSADA', lado: 'E', sec: 'saia_5', tipo: 'amassada' },
+  { cod: 64, nome: '5ª SAIA "D" AMASSADA', lado: 'D', sec: 'saia_5', tipo: 'amassada' },
+  { cod: 65, nome: '5ª SAIA "E" RASPADA', lado: 'E', sec: 'saia_5', tipo: 'raspada' },
+  { cod: 66, nome: '5ª SAIA "D" RASPADA', lado: 'D', sec: 'saia_5', tipo: 'raspada' },
+  { cod: 67, nome: '6ª CHAPA "E" AMASSADA', lado: 'E', sec: 'chapa_6', tipo: 'amassada' },
+  { cod: 68, nome: '6ª CHAPA "D" AMASSADA', lado: 'D', sec: 'chapa_6', tipo: 'amassada' },
+  { cod: 69, nome: '6ª CHAPA "E" RASPADA', lado: 'E', sec: 'chapa_6', tipo: 'raspada' },
+  { cod: 70, nome: '6ª CHAPA "D" RASPADA', lado: 'D', sec: 'chapa_6', tipo: 'raspada' },
+  { cod: 71, nome: '6ª SAIA "E" RASPADA', lado: 'E', sec: 'saia_6', tipo: 'raspada' },
+  { cod: 72, nome: '6ª SAIA "D" AMASSADA', lado: 'D', sec: 'saia_6', tipo: 'amassada' },
+  { cod: 73, nome: '6ª SAIA "E" AMASSADA', lado: 'E', sec: 'saia_6', tipo: 'amassada' },
+  { cod: 74, nome: '6ª SAIA "D" RASPADA', lado: 'D', sec: 'saia_6', tipo: 'raspada' },
+  { cod: 75, nome: '7ª CHAPA "E" AMASSADA', lado: 'E', sec: 'chapa_7', tipo: 'amassada' },
+  { cod: 76, nome: '7ª CHAPA "D" AMASSADA', lado: 'D', sec: 'chapa_7', tipo: 'amassada' },
+  { cod: 77, nome: '7ª CHAPA "E" RASPADA', lado: 'E', sec: 'chapa_7', tipo: 'raspada' },
+  { cod: 78, nome: '7ª CHAPA "D" RASPADA', lado: 'D', sec: 'chapa_7', tipo: 'raspada' },
+  { cod: 79, nome: '7ª SAIA "E" RASPADA', lado: 'E', sec: 'saia_7', tipo: 'raspada' },
+  { cod: 80, nome: '7ª SAIA "D" AMASSADA', lado: 'D', sec: 'saia_7', tipo: 'amassada' },
+  { cod: 81, nome: '7ª SAIA "E" AMASSADA', lado: 'E', sec: 'saia_7', tipo: 'amassada' },
+  { cod: 82, nome: '7ª SAIA "D" RASPADA', lado: 'D', sec: 'saia_7', tipo: 'raspada' },
+  { cod: 83, nome: 'LANTERNA "E" AVARIADA', lado: 'E', sec: 'lanterna', tipo: 'avariada' },
+  { cod: 84, nome: 'LANTERNA "D" AVARIADA', lado: 'D', sec: 'lanterna', tipo: 'avariada' },
+  { cod: 85, nome: 'CAPA DA LANTERNA "E" AVARIADA', lado: 'E', sec: 'lanterna', tipo: 'avariada' },
+  { cod: 86, nome: 'CAPA DA LANTERNA "D" AVARIADA', lado: 'D', sec: 'lanterna', tipo: 'avariada' },
+  { cod: 87, nome: 'LENTE DO FAROL "E" AVARIADO', lado: 'E', sec: 'farol', tipo: 'avariado' },
+  { cod: 88, nome: 'LENTE DO FAROL "D" AVARIADO', lado: 'D', sec: 'farol', tipo: 'avariado' },
+  { cod: 89, nome: 'CAPA DO FAROL "E" AVARIADO', lado: 'E', sec: 'farol', tipo: 'avariado' },
+  { cod: 90, nome: 'CAPA DO FAROL "D" AVARIADO', lado: 'D', sec: 'farol', tipo: 'avariado' },
+  { cod: 91, nome: 'FAROL "E" AVARIADO', lado: 'E', sec: 'farol', tipo: 'avariado' },
+  { cod: 92, nome: 'FAROL "D" AVARIADO', lado: 'D', sec: 'farol', tipo: 'avariado' },
+  { cod: 93, nome: 'PNEU DIANT. "E" CORTADO', lado: 'E', sec: 'pneu_diant', tipo: 'cortado' },
+  { cod: 94, nome: 'PNEU DIANT. "D" CORTADO', lado: 'D', sec: 'pneu_diant', tipo: 'cortado' },
+  { cod: 95, nome: 'PNEU DIANT. "E" RASPADO', lado: 'E', sec: 'pneu_diant', tipo: 'raspado' },
+  { cod: 96, nome: 'PNEU DIANT. "D" RASPADO', lado: 'D', sec: 'pneu_diant', tipo: 'raspado' },
+  { cod: 97, nome: 'PNEU TRAS. "E" CORTADO', lado: 'E', sec: 'pneu_tras', tipo: 'cortado' },
+  { cod: 98, nome: 'PNEU TRAS. "D" CORTADO', lado: 'D', sec: 'pneu_tras', tipo: 'cortado' },
+  { cod: 99, nome: 'PNEU TRAS. "E" RASPADO', lado: 'E', sec: 'pneu_tras', tipo: 'raspado' },
+  { cod: 100, nome: 'PNEU TRAS. "D" RASPADO', lado: 'D', sec: 'pneu_tras', tipo: 'raspado' },
+  { cod: 101, nome: 'PNEU DENTRO "E" CORTADO', lado: 'E', sec: 'pneu_tras', tipo: 'cortado' },
+  { cod: 102, nome: 'PNEU DENTRO "D" CORTADO', lado: 'D', sec: 'pneu_tras', tipo: 'cortado' },
+  { cod: 103, nome: 'ARCO DA RODA DIANT. "E" QUEBRADO', lado: 'E', sec: 'arco_diant', tipo: 'quebrado' },
+  { cod: 104, nome: 'ARCO DA RODA DIANT. "D" QUEBRADO', lado: 'D', sec: 'arco_diant', tipo: 'quebrado' },
+  { cod: 105, nome: 'ARCO DA RODA DIANT. "E" RASPADO', lado: 'E', sec: 'arco_diant', tipo: 'raspado' },
+  { cod: 106, nome: 'ARCO DA RODA DIANT. "D" RASPADO', lado: 'D', sec: 'arco_diant', tipo: 'raspado' },
+  { cod: 107, nome: 'ARCO DA RODA TRAS. "E" QUEBRADO', lado: 'E', sec: 'arco_tras', tipo: 'quebrado' },
+  { cod: 108, nome: 'ARCO DA RODA TRAS. "D" QUEBRADO', lado: 'D', sec: 'arco_tras', tipo: 'quebrado' },
+  { cod: 109, nome: 'ARCO DA RODA TRAS. "E" RASPADO', lado: 'E', sec: 'arco_tras', tipo: 'raspado' },
+  { cod: 110, nome: 'ARCO DA RODA TRAS. "D" RASPADO', lado: 'D', sec: 'arco_tras', tipo: 'raspado' },
+  { cod: 111, nome: 'ARO DIAN. "E" AMASSADO', lado: 'E', sec: 'aro_diant', tipo: 'amassado' },
+  { cod: 112, nome: 'ARO DIAN. "D" AMASSADO', lado: 'D', sec: 'aro_diant', tipo: 'amassado' },
+  { cod: 113, nome: 'ARO TRAS. "E" AMASSADO', lado: 'E', sec: 'aro_tras', tipo: 'amassado' },
+  { cod: 114, nome: 'ARO TRAS. "D" AMASSADO', lado: 'D', sec: 'aro_tras', tipo: 'amassado' },
+  { cod: 115, nome: 'LATERAL DO TETO "E" AVARIADO', lado: 'E', sec: 'teto', tipo: 'avariado' },
+  { cod: 116, nome: 'LATERAL DO TETO "D" AVARIADO', lado: 'D', sec: 'teto', tipo: 'avariado' },
+  { cod: 117, nome: 'BRAÇO DO RETRO. "E" AVARIADO', lado: 'E', sec: 'retrovisor', tipo: 'avariado' },
+  { cod: 118, nome: 'BRAÇO DO RETRO. "D" AVARIADO', lado: 'D', sec: 'retrovisor', tipo: 'avariado' },
+  { cod: 119, nome: 'LENTE DO RETRO. "E" AVARIADO', lado: 'E', sec: 'retrovisor', tipo: 'avariado' },
+  { cod: 120, nome: 'LENTE DO RETRO. "D" AVARIADO', lado: 'D', sec: 'retrovisor', tipo: 'avariado' },
+  { cod: 121, nome: 'CAPA DO RETRO. "E" AVARIADO', lado: 'E', sec: 'retrovisor', tipo: 'avariado' },
+  { cod: 122, nome: 'CAPA DO RETRO. "D" AVARIADO', lado: 'D', sec: 'retrovisor', tipo: 'avariado' },
+  { cod: 123, nome: 'OLHO DE GATO "E" TRINCADO', lado: 'E', sec: 'olho_gato', tipo: 'trincado' },
+  { cod: 124, nome: 'OLHO DE GATO "D" TRINCADO', lado: 'D', sec: 'olho_gato', tipo: 'trincado' },
+  { cod: 125, nome: 'PARACHOQUE TRAS. RASPADO', lado: 'G', sec: 'parachoque_tras', tipo: 'raspado' },
+  { cod: 126, nome: 'PARACHOQUE TRAS. QUEBRADO', lado: 'G', sec: 'parachoque_tras', tipo: 'quebrado' },
+  { cod: 127, nome: 'PARACHOQUE DIAN. RASPADO', lado: 'G', sec: 'parachoque_diant', tipo: 'raspado' },
+  { cod: 128, nome: 'PARACHOQUE DIAN. QUEBRADO', lado: 'G', sec: 'parachoque_diant', tipo: 'quebrado' },
+  { cod: 129, nome: 'GRA. DO PARACHOQUE SUP. RASPADO', lado: 'G', sec: 'grade_sup', tipo: 'raspado' },
+  { cod: 130, nome: 'GRA. DO PARACHOQUE SUP. QUEBRADO', lado: 'G', sec: 'grade_sup', tipo: 'quebrado' },
+  { cod: 131, nome: 'GRA. DO PARACHOQUE INF. RASPADO', lado: 'G', sec: 'grade_inf', tipo: 'raspado' },
+  { cod: 132, nome: 'GRA. DO PARACHOQUE INF. QUEBRADO', lado: 'G', sec: 'grade_inf', tipo: 'quebrado' },
+  { cod: 133, nome: 'BALAUSTRE QUEBRADO/SOLTO', lado: 'G', sec: 'geral', tipo: 'quebrado' },
+  { cod: 134, nome: 'VIGIA QUEBRADO', lado: 'G', sec: 'vigia', tipo: 'quebrado' },
+  { cod: 135, nome: 'VIDRO DA VISTA QUEBRADO', lado: 'G', sec: 'vidro_vista', tipo: 'quebrado' },
+  { cod: 136, nome: 'PORTA DIAN. AVARIADA', lado: 'D', sec: 'porta_diant', tipo: 'avariada' },
+  { cod: 137, nome: 'PORTA TRAS. AVARIADA', lado: 'D', sec: 'porta_tras', tipo: 'avariada' },
+  { cod: 138, nome: 'CATA VENTO QUEBRADO', lado: 'G', sec: 'geral', tipo: 'quebrado' },
+  { cod: 139, nome: 'COMANDO DE SETA QUEBRADO', lado: 'G', sec: 'geral', tipo: 'quebrado' },
+  { cod: 140, nome: 'STOP QUEBRADO', lado: 'G', sec: 'geral', tipo: 'quebrado' },
+  { cod: 141, nome: 'TAMPA DO FILTRO DE COMB. AVARIADO', lado: 'D', sec: 'tampa_comb', tipo: 'avariado' },
+  { cod: 142, nome: 'RETRO. INTER. AVARIADO', lado: 'G', sec: 'geral', tipo: 'avariado' },
+  { cod: 143, nome: 'SEM AVARIAS', lado: 'G', sec: 'status', tipo: 'status' },
+  { cod: 144, nome: 'MOT NÃO PASSOU AVARIAS', lado: 'G', sec: 'status', tipo: 'status' }
+];
+
+function carregarAvarias() {
+  try {
+    const raw = localStorage.getItem(AVARIAS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+/**
+ * Gerencia o cadastro, visualização gráfica e seleção interativa por clique em avarias.html.
+ */
+function initAvariasModule() {
+  const form = document.getElementById('formInserirAvaria');
+  const containerHistorico = document.getElementById('listaAvariasContainer');
+  const dataInput = document.getElementById('inputAvariaData');
+  const carroInput = document.getElementById('inputAvariaCarro');
+  const descInput = document.getElementById('inputAvariaDescricao');
+  const containerVistas = document.getElementById('containerVistasAvarias');
+  const containerTags = document.getElementById('containerTagsAvarias');
+  const contadorAvarias = document.getElementById('contadorAvarias');
+  const btnLimpar = document.getElementById('btnLimparAvarias');
+  const btnModelo1 = document.getElementById('btnModelo1');
+  const btnModelo2 = document.getElementById('btnModelo2');
+  const btnAtalho143 = document.getElementById('btnAtalho143');
+  const btnAtalho144 = document.getElementById('btnAtalho144');
+  const tabBtns = document.querySelectorAll('.avaria-tab-btn');
+
+  if (!form || !containerVistas) return;
+
+  // Estado do Módulo
+  let modeloAtual = 1; // 1 = Ônibus 6 Chapas (Médio), 2 = Ônibus 7 Chapas (Longo)
+  let vistaAtual = 'LD'; // 'LD', 'LE', 'DIAN', 'TRAS', 'LISTA'
+  const avariasSelecionadas = new Set(); // Conjunto de códigos numéricos ativos
+
+  const containerTrocas = document.getElementById('containerTrocasCarroJornada');
+  const datalistCarros = document.getElementById('listaCarrosJornadaDatalist');
+
+  /**
+   * Obtém a data e os carros persistentes da jornada (rascunho ativo ou jornada concluída).
+   * Suporta o histórico completo de trocas de carro, de linha e de ambos (carro e linha).
+   */
+  function obterDadosPersistentesJornada() {
+    let dataJornada = '';
+    let carroAtual = '';
+    const carrosHistorico = []; // Array de { numero, rotulo, tipo: 'inicial' | 'anterior' | 'atual' }
+
+    try {
+      // 1. Tenta pegar do rascunho ativo de jornada (prioridade máxima)
+      const rascunhoRaw = localStorage.getItem('controle_motorista_jornada_rascunho');
+      if (rascunhoRaw) {
+        const rascunho = JSON.parse(rascunhoRaw);
+        if (rascunho.data && rascunho.data.trim()) {
+          dataJornada = rascunho.data.trim();
+        }
+        if (rascunho.carroNumero && rascunho.carroNumero.trim()) {
+          carroAtual = rascunho.carroNumero.trim().toUpperCase();
+        }
+
+        // Se houver histórico de trocas nas etapas da jornada
+        if (Array.isArray(rascunho.etapasJornadaAtiva)) {
+          rascunho.etapasJornadaAtiva.forEach((etapa, idx) => {
+            const num = (etapa.carroNumero || '').trim().toUpperCase();
+            if (num && !carrosHistorico.some(c => c.numero === num)) {
+              carrosHistorico.push({
+                numero: num,
+                rotulo: idx === 0 ? 'Carro Inicial' : `Carro Anterior (${idx + 1})`,
+                tipo: 'anterior'
+              });
+            }
+          });
+        }
+      }
+
+      // 2. Se não encontrou no rascunho, busca na lista de jornadas salvas
+      if (!dataJornada || !carroAtual) {
+        const jornadasRaw = localStorage.getItem('controle_motorista_jornada');
+        if (jornadasRaw) {
+          const jornadas = JSON.parse(jornadasRaw);
+          if (Array.isArray(jornadas) && jornadas.length > 0) {
+            const jRecente = jornadas[0]; // mais recente
+            if (!dataJornada && jRecente.data) {
+              dataJornada = jRecente.data.trim();
+            }
+            if (!carroAtual && jRecente.carroNumero) {
+              carroAtual = jRecente.carroNumero.trim().toUpperCase();
+            }
+            if (Array.isArray(jRecente.etapas)) {
+              jRecente.etapas.forEach((etapa, idx) => {
+                const num = (etapa.carroNumero || '').trim().toUpperCase();
+                if (num && !carrosHistorico.some(c => c.numero === num)) {
+                  carrosHistorico.push({
+                    numero: num,
+                    rotulo: idx === 0 ? 'Carro Inicial' : `Carro Anterior (${idx + 1})`,
+                    tipo: 'anterior'
+                  });
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao obter dados persistentes da jornada para avarias:', e);
+    }
+
+    // Se encontramos um carro atual, adiciona ao histórico caso não esteja
+    if (carroAtual) {
+      const idxExistente = carrosHistorico.findIndex(c => c.numero === carroAtual);
+      if (idxExistente >= 0) {
+        carrosHistorico[idxExistente].rotulo = carrosHistorico.length > 1 ? 'Carro Atual (Após Troca)' : 'Carro da Jornada';
+        carrosHistorico[idxExistente].tipo = 'atual';
+      } else {
+        carrosHistorico.push({
+          numero: carroAtual,
+          rotulo: carrosHistorico.length > 0 ? 'Carro Atual (Após Troca)' : 'Carro da Jornada',
+          tipo: 'atual'
+        });
+      }
+    }
+
+    return {
+      data: dataJornada,
+      carroAtual: carroAtual,
+      carros: carrosHistorico
+    };
+  }
+
+  // Fallbacks caso jornada ainda não tenha registros
+  function obterDataEscalaFallback() {
+    try {
+      const dados = localStorage.getItem('controle_motorista_escala');
+      if (!dados) return '';
+      const lista = JSON.parse(dados);
+      if (Array.isArray(lista) && lista.length > 0 && lista[0].data) {
+        return lista[0].data;
+      }
+    } catch {
+      return '';
+    }
+    return '';
+  }
+
+  function obterCarroFallback() {
+    try {
+      const ultimo = localStorage.getItem('controle_motorista_ultimo_carro');
+      if (ultimo) return ultimo;
+      const dados = localStorage.getItem(CARROS_STORAGE_KEY);
+      if (!dados) return '';
+      const lista = JSON.parse(dados);
+      if (Array.isArray(lista) && lista.length > 0) {
+        return lista[lista.length - 1].numero || lista[0].numero || '';
+      }
+    } catch {
+      return '';
+    }
+    return '';
+  }
+
+  const dadosJornada = obterDadosPersistentesJornada();
+
+  // 1. Campo Data: acompanha a data persistente de jornada.html
+  if (dataInput) {
+    const dataDefinida = dadosJornada.data || obterDataEscalaFallback();
+    if (dataDefinida) {
+      dataInput.value = dataDefinida;
+    } else if (!dataInput.value) {
+      const hoje = new Date();
+      const d = String(hoje.getDate()).padStart(2, '0');
+      const m = String(hoje.getMonth() + 1).padStart(2, '0');
+      const a = hoje.getFullYear();
+      dataInput.value = `${d}/${m}/${a}`;
+    }
+
+    // Máscara automática em tempo real para a data (DD/MM/AAAA)
+    dataInput.addEventListener('input', () => {
+      let val = dataInput.value.replace(/\D/g, '');
+      if (val.length > 8) val = val.slice(0, 8);
+      if (val.length >= 5) {
+        dataInput.value = `${val.slice(0, 2)}/${val.slice(2, 4)}/${val.slice(4)}`;
+      } else if (val.length >= 3) {
+        dataInput.value = `${val.slice(0, 2)}/${val.slice(2)}`;
+      } else {
+        dataInput.value = val;
+      }
+    });
+
+    dataInput.addEventListener('blur', () => {
+      if (dataInput.value.trim()) {
+        dataInput.value = formatarData(dataInput.value);
+      }
+    });
+  }
+
+  // 2. Campo N° Carro: acompanha o carro persistente de jornada.html (lembrando trocas de carro/linha)
+  if (carroInput) {
+    const carroDefinido = dadosJornada.carroAtual || obterCarroFallback();
+    if (carroDefinido && !carroInput.value) {
+      carroInput.value = carroDefinido;
+    }
+
+    // Alimenta o datalist com os carros da jornada
+    if (datalistCarros && dadosJornada.carros.length > 0) {
+      datalistCarros.innerHTML = dadosJornada.carros.map(c => `<option value="${c.numero}">${c.rotulo}</option>`).join('');
+    }
+
+    // Se houve troca de carro e há mais de 1 carro registrado na jornada, exibe botões rápidos
+    if (containerTrocas && dadosJornada.carros.length > 1) {
+      containerTrocas.style.display = 'flex';
+      containerTrocas.innerHTML = `
+        <span class="troca-carro-aviso-rotulo">🔄 Carros da Jornada:</span>
+        <div class="troca-carro-botoes-grupo">
+          ${dadosJornada.carros.map(c => {
+            const isAtivo = c.numero === carroInput.value.trim().toUpperCase();
+            return `
+              <button type="button" class="btn-troca-carro-chip ${isAtivo ? 'is-active' : ''}" data-carro="${c.numero}" title="Selecionar ${c.rotulo} (${c.numero})">
+                ${c.rotulo}: <strong>${c.numero}</strong>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+
+      containerTrocas.querySelectorAll('.btn-troca-carro-chip').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const num = btn.getAttribute('data-carro');
+          if (num) {
+            carroInput.value = num;
+            atualizarChipsTrocaCarro();
+            atualizarVista();
+          }
+        });
+      });
+    }
+
+    function atualizarChipsTrocaCarro() {
+      if (!containerTrocas) return;
+      const numAtual = carroInput.value.trim().toUpperCase();
+      containerTrocas.querySelectorAll('.btn-troca-carro-chip').forEach(btn => {
+        const cNum = btn.getAttribute('data-carro');
+        btn.classList.toggle('is-active', cNum === numAtual);
+      });
+    }
+
+    carroInput.addEventListener('input', () => {
+      carroInput.value = carroInput.value.toUpperCase();
+      atualizarChipsTrocaCarro();
+      atualizarVista();
+    });
+  }
+
+  function obterAvariaPorCodigo(cod) {
+    return TABELA_AVARIAS_144.find(item => item.cod === cod);
+  }
+
+  // Alterna uma avaria no conjunto
+  function alternarAvaria(cod) {
+    const item = obterAvariaPorCodigo(cod);
+    if (!item) return;
+
+    if (cod === 143 || cod === 144) {
+      // Se selecionou status especial, limpa os danos
+      if (avariasSelecionadas.has(cod)) {
+        avariasSelecionadas.delete(cod);
+      } else {
+        avariasSelecionadas.clear();
+        avariasSelecionadas.add(cod);
+      }
+    } else {
+      // Se selecionou dano, remove status 143/144
+      avariasSelecionadas.delete(143);
+      avariasSelecionadas.delete(144);
+
+      if (avariasSelecionadas.has(cod)) {
+        avariasSelecionadas.delete(cod);
+      } else {
+        avariasSelecionadas.add(cod);
+      }
+    }
+
+    sincronizarEstadoVisual();
+  }
+
+  function limparTodasAvarias() {
+    avariasSelecionadas.clear();
+    sincronizarEstadoVisual();
+  }
+
+  // Sincroniza o campo inputAvariaDescricao, as tags e os botões ativos
+  function sincronizarEstadoVisual() {
+    // 1. Atualiza o input com somente os códigos selecionados (sem nome)
+    const codigosOrdenados = Array.from(avariasSelecionadas).sort((a, b) => a - b);
+    if (codigosOrdenados.length === 0) {
+      descInput.value = '';
+    } else {
+      descInput.value = codigosOrdenados.join(', ');
+    }
+
+    // 2. Contador
+    if (contadorAvarias) {
+      contadorAvarias.textContent = String(avariasSelecionadas.size);
+    }
+
+    // 3. Tags / Chips no painel superior: somente o código sem nome
+    if (containerTags) {
+      if (avariasSelecionadas.size === 0) {
+        containerTags.innerHTML = '<span class="avarias-tag-empty">Nenhuma avaria marcada no ônibus.</span>';
+      } else {
+        containerTags.innerHTML = '';
+        codigosOrdenados.forEach(c => {
+          const it = obterAvariaPorCodigo(c);
+          const chip = document.createElement('span');
+          chip.className = 'avaria-tag-chip';
+          if (it) chip.setAttribute('title', `${c} - ${it.nome}`);
+          chip.innerHTML = `
+            <span><strong>[${c}]</strong></span>
+            <button type="button" class="avaria-tag-chip__remove" data-cod="${c}" title="Remover avaria">&times;</button>
+          `;
+          const btnRemove = chip.querySelector('.avaria-tag-chip__remove');
+          btnRemove.addEventListener('click', (e) => {
+            e.stopPropagation();
+            alternarAvaria(c);
+          });
+          containerTags.appendChild(chip);
+        });
+      }
+    }
+
+    // 4. Atualiza destaque nos botões da vista atual
+    document.querySelectorAll('.btn-avaria-chip').forEach(btn => {
+      const cod = parseInt(btn.getAttribute('data-cod'), 10);
+      if (avariasSelecionadas.has(cod)) {
+        btn.classList.add('is-active');
+      } else {
+        btn.classList.remove('is-active');
+      }
+    });
+
+    document.querySelectorAll('.item-codigo-card').forEach(card => {
+      const cod = parseInt(card.getAttribute('data-cod'), 10);
+      if (avariasSelecionadas.has(cod)) {
+        card.classList.add('is-active');
+      } else {
+        card.classList.remove('is-active');
+      }
+    });
+
+    // 5. Atualiza botões de atalho
+    if (btnAtalho143) {
+      btnAtalho143.classList.toggle('is-active', avariasSelecionadas.has(143));
+    }
+    if (btnAtalho144) {
+      btnAtalho144.classList.toggle('is-active', avariasSelecionadas.has(144));
+    }
+  }
+
+  // Cria um botão chip interativo com o nome oficial completo (sem abreviações)
+  function criarChip(cod) {
+    const item = obterAvariaPorCodigo(cod);
+    if (!item) return '';
+    const desc = item.nome; // Nome completo oficial da tabela (sem abreviação)
+    const ativo = avariasSelecionadas.has(cod) ? 'is-active' : '';
+    return `
+      <button type="button" class="btn-avaria-chip ${ativo}" data-cod="${cod}" title="${item.nome}">
+        <span class="chip-num">${cod}</span>
+        <span class="chip-label">${desc}</span>
+      </button>
+    `;
+  }
+
+  // Renderiza Vista Lado Direito (Portas L/D) - DIANTEIRA NA DIREITA, TRASEIRA NA ESQUERDA (Conforme Imagem 1)
+  function renderizarLadoDireito() {
+    const isModelo2 = modeloAtual === 2;
+
+    let svgJanelas = '';
+    let svgPortas = '';
+
+    if (!isModelo2) {
+      // Modelo 1: 6 chapas, 2 portas (dianteira à direita e traseira/meio)
+      svgJanelas = `
+        <!-- 6ª chapa (traseira à esquerda) -->
+        <rect x="35" y="28" width="70" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 5ª chapa -->
+        <rect x="115" y="28" width="80" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 4ª chapa -->
+        <rect x="205" y="28" width="75" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 3ª chapa -->
+        <rect x="290" y="28" width="60" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 2ª chapa -->
+        <rect x="420" y="28" width="85" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 1ª chapa (dianteira à direita) -->
+        <rect x="515" y="28" width="75" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+      `;
+      svgPortas = `
+        <!-- Porta Traseira/Meio -->
+        <rect x="360" y="32" width="50" height="98" rx="3" fill="#0f172a" stroke="#00aaff" stroke-width="2" />
+        <line x1="385" y1="32" x2="385" y2="130" stroke="#00aaff" stroke-width="1" />
+        <text x="385" y="142" font-size="9" fill="#00aaff" text-anchor="middle" font-weight="bold">PORTA MEIO</text>
+
+        <!-- Porta Dianteira (à direita) -->
+        <rect x="600" y="32" width="40" height="98" rx="3" fill="#0f172a" stroke="#00aaff" stroke-width="2" />
+        <line x1="620" y1="32" x2="620" y2="130" stroke="#00aaff" stroke-width="1" />
+        <text x="620" y="142" font-size="9" fill="#00aaff" text-anchor="middle" font-weight="bold">PORTA DIANT.</text>
+        <text x="620" y="152" font-size="8" fill="#f59e0b" text-anchor="middle" font-weight="bold">PÉ COLUNA</text>
+      `;
+    } else {
+      // Modelo 2: 7 chapas, portas proporcionais
+      svgJanelas = `
+        <!-- 7ª chapa -->
+        <rect x="35" y="28" width="60" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 6ª chapa -->
+        <rect x="105" y="28" width="70" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 5ª chapa -->
+        <rect x="185" y="28" width="70" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 4ª chapa -->
+        <rect x="265" y="28" width="55" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 3ª chapa -->
+        <rect x="385" y="28" width="70" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 2ª chapa -->
+        <rect x="465" y="28" width="70" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <!-- 1ª chapa -->
+        <rect x="545" y="28" width="50" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+      `;
+      svgPortas = `
+        <!-- Porta Traseira/Meio -->
+        <rect x="330" y="32" width="45" height="98" rx="3" fill="#0f172a" stroke="#00aaff" stroke-width="2" />
+        <line x1="352" y1="32" x2="352" y2="130" stroke="#00aaff" stroke-width="1" />
+        <text x="352" y="142" font-size="9" fill="#00aaff" text-anchor="middle" font-weight="bold">PORTA TRAS.</text>
+
+        <!-- Porta Dianteira (à direita) -->
+        <rect x="605" y="32" width="38" height="98" rx="3" fill="#0f172a" stroke="#00aaff" stroke-width="2" />
+        <line x1="624" y1="32" x2="624" y2="130" stroke="#00aaff" stroke-width="1" />
+        <text x="624" y="142" font-size="9" fill="#00aaff" text-anchor="middle" font-weight="bold">PORTA DIANT.</text>
+        <text x="624" y="152" font-size="8" fill="#f59e0b" text-anchor="middle" font-weight="bold">PÉ COLUNA</text>
+      `;
+    }
+
+    return `
+      <div class="onibus-esquema-card">
+        <div class="onibus-esquema-titulo">
+          <span>LADO DIREITO (L/D) — COM PORTAS DE EMBARQUE/DESEMBARQUE</span>
+          <span style="color:#00aaff;">${isModelo2 ? 'Modelo 7 Chapas (Longo)' : 'Modelo 6 Chapas (Médio)'}</span>
+        </div>
+
+        <div class="onibus-svg-container">
+          <svg viewBox="0 0 710 180" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gradAmarelo" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#ffdd00" />
+                <stop offset="100%" stop-color="#eab308" />
+              </linearGradient>
+              <linearGradient id="gradAzul" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7" />
+                <stop offset="100%" stop-color="#0369a1" />
+              </linearGradient>
+            </defs>
+
+            <!-- Indicadores de Orientação (Traseira na Esquerda / Dianteira na Direita) -->
+            <rect x="20" y="3" width="135" height="14" rx="3" fill="#0f172a" opacity="0.85" />
+            <text x="87" y="13" font-size="9" font-weight="bold" fill="#f59e0b" text-anchor="middle">⬅️ TRASEIRA (FUNDO)</text>
+
+            <rect x="555" y="3" width="135" height="14" rx="3" fill="#0f172a" opacity="0.85" />
+            <text x="622" y="13" font-size="9" font-weight="bold" fill="#00aaff" text-anchor="middle">DIANTEIRA (FRENTE) ➡️</text>
+
+            <!-- Silhueta Principal da Carroceria (Traseira à esquerda, Dianteira à direita) -->
+            <path d="M 20,135 L 20,38 Q 20,15 45,15 L 660,15 Q 690,15 690,38 L 685,135 Z" fill="url(#gradAmarelo)" stroke="#1e293b" stroke-width="2" />
+
+            <!-- Faixa Vermelha Separadora -->
+            <rect x="20" y="80" width="668" height="6" fill="#dc2626" />
+
+            <!-- Saia / Parte Inferior Azul -->
+            <path d="M 20,86 L 687,86 L 685,135 L 20,135 Z" fill="url(#gradAzul)" />
+
+            <!-- Janelas e Portas -->
+            ${svgJanelas}
+            ${svgPortas}
+
+            <!-- Para-brisa lateral dianteiro (à DIREITA) -->
+            <path d="M 648,26 L 665,26 Q 685,26 685,42 L 682,75 L 648,75 Z" fill="#0f172a" stroke="#334155" stroke-width="1.5" />
+
+            <!-- Rodas & Arcos -->
+            <!-- Roda Traseira (à ESQUERDA) -->
+            <path d="M 135,135 A 25,25 0 0 1 185,135 Z" fill="#0b0e14" />
+            <circle cx="160" cy="135" r="21" fill="#1e293b" stroke="#475569" stroke-width="2" />
+            <circle cx="160" cy="135" r="10" fill="#94a3b8" />
+
+            <!-- Roda Dianteira (à DIREITA) -->
+            <path d="M 535,135 A 25,25 0 0 1 585,135 Z" fill="#0b0e14" />
+            <circle cx="560" cy="135" r="21" fill="#1e293b" stroke="#475569" stroke-width="2" />
+            <circle cx="560" cy="135" r="10" fill="#94a3b8" />
+
+            <!-- Inscrição Reginas e Frota -->
+            <text x="235" y="112" font-family="sans-serif" font-size="22" font-weight="900" font-style="italic" fill="#ffffff" opacity="0.95">Reginas</text>
+            <text x="75" y="112" font-family="monospace" font-size="12" font-weight="bold" fill="#ffffff">RJ ${carroInput && carroInput.value.trim() ? carroInput.value.trim() : '110.091'}</text>
+            <text x="590" y="24" font-size="8.5" font-weight="bold" fill="#00aaff">CÚPULA DIANTEIRA ➡️</text>
+          </svg>
+        </div>
+
+        <!-- Seções Clicáveis da Carroceria L/D (Ordenadas da Frente para Trás) -->
+        <div class="grid-avarias-secoes grid-avarias-secoes--lateral">
+          <!-- Dianteira & Teto L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Dianteira & Teto (L/D)</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(116)}
+              ${criarChip(10)}
+              ${criarChip(12)}
+              ${criarChip(14)}
+              ${criarChip(16)}
+              ${criarChip(2)}
+              ${criarChip(4)}
+            </div>
+          </div>
+
+          <!-- Portas L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Portas L/D</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(136)}
+              ${criarChip(137)}
+            </div>
+          </div>
+
+          <!-- 1ª Chapa e 1ª Saia L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">1ª Chapa & 1ª Saia (Frente)</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(28)}
+              ${criarChip(30)}
+              ${criarChip(32)}
+              ${criarChip(34)}
+            </div>
+          </div>
+
+          <!-- Roda Dianteira L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Roda Diant. L/D</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(104)}
+              ${criarChip(106)}
+              ${criarChip(94)}
+              ${criarChip(96)}
+              ${criarChip(112)}
+            </div>
+          </div>
+
+          <!-- 2ª Chapa e 2ª Saia L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">2ª Chapa & 2ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(36)}
+              ${criarChip(38)}
+              ${criarChip(40)}
+              ${criarChip(42)}
+            </div>
+          </div>
+
+          <!-- 3ª Chapa e 3ª Saia L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">3ª Chapa & 3ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(44)}
+              ${criarChip(46)}
+              ${criarChip(48)}
+              ${criarChip(50)}
+            </div>
+          </div>
+
+          <!-- 4ª Chapa e 4ª Saia L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">4ª Chapa & 4ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(52)}
+              ${criarChip(54)}
+              ${criarChip(56)}
+              ${criarChip(58)}
+            </div>
+          </div>
+
+          <!-- Roda Traseira L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Roda Tras. L/D</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(108)}
+              ${criarChip(110)}
+              ${criarChip(98)}
+              ${criarChip(100)}
+              ${criarChip(102)}
+              ${criarChip(114)}
+            </div>
+          </div>
+
+          <!-- 5ª Chapa e 5ª Saia L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">5ª Chapa & 5ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(60)}
+              ${criarChip(62)}
+              ${criarChip(64)}
+              ${criarChip(66)}
+            </div>
+          </div>
+
+          <!-- 6ª Chapa e 6ª Saia L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">6ª Chapa & 6ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(68)}
+              ${criarChip(70)}
+              ${criarChip(72)}
+              ${criarChip(74)}
+            </div>
+          </div>
+
+          ${isModelo2 ? `
+            <!-- 7ª Chapa e 7ª Saia L/D (Modelo 2 Longo) -->
+            <div class="secao-avaria-box">
+              <div class="secao-avaria-box__header">7ª Chapa & 7ª Saia</div>
+              <div class="secao-avaria-box__botoes">
+                ${criarChip(76)}
+                ${criarChip(78)}
+                ${criarChip(80)}
+                ${criarChip(82)}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Coluna Traseira & Acessórios L/D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Traseira (Fundo) & Acessórios</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(18)}
+              ${criarChip(20)}
+              ${criarChip(22)}
+              ${criarChip(24)}
+              ${criarChip(6)}
+              ${criarChip(8)}
+              ${criarChip(124)}
+              ${criarChip(141)}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Renderiza Vista Lado Esquerdo (Motorista L/E)
+  function renderizarLadoEsquerdo() {
+    const isModelo2 = modeloAtual === 2;
+
+    let svgJanelas = '';
+    if (!isModelo2) {
+      // Modelo 1 (6 chapas sem portas)
+      svgJanelas = `
+        <rect x="35" y="28" width="60" height="42" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1.5" />
+        <rect x="105" y="28" width="85" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="200" y="28" width="85" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="295" y="28" width="85" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="390" y="28" width="85" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="485" y="28" width="85" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="580" y="28" width="95" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+      `;
+    } else {
+      // Modelo 2 (7 chapas sem portas - Imagem 1 inferior)
+      svgJanelas = `
+        <rect x="35" y="28" width="60" height="42" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1.5" />
+        <rect x="105" y="28" width="75" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="190" y="28" width="75" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="275" y="28" width="75" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="360" y="28" width="75" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="445" y="28" width="75" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="530" y="28" width="75" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+        <rect x="615" y="28" width="65" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+      `;
+    }
+
+    return `
+      <div class="onibus-esquema-card">
+        <div class="onibus-esquema-titulo">
+          <span>LADO ESQUERDO (L/E) — LADO DO MOTORISTA (SEM PORTAS)</span>
+          <span style="color:#00aaff;">${isModelo2 ? 'Modelo 7 Chapas (Longo)' : 'Modelo 6 Chapas (Médio)'}</span>
+        </div>
+
+        <div class="onibus-svg-container">
+          <svg viewBox="0 0 710 180" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gradAmareloLE" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#ffdd00" />
+                <stop offset="100%" stop-color="#eab308" />
+              </linearGradient>
+              <linearGradient id="gradAzulLE" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7" />
+                <stop offset="100%" stop-color="#0369a1" />
+              </linearGradient>
+            </defs>
+
+            <!-- Indicadores de Orientação (Dianteira na Esquerda / Traseira na Direita) -->
+            <rect x="20" y="3" width="135" height="14" rx="3" fill="#0f172a" opacity="0.85" />
+            <text x="87" y="13" font-size="9" font-weight="bold" fill="#00aaff" text-anchor="middle">⬅️ DIANTEIRA (FRENTE)</text>
+
+            <rect x="555" y="3" width="135" height="14" rx="3" fill="#0f172a" opacity="0.85" />
+            <text x="622" y="13" font-size="9" font-weight="bold" fill="#f59e0b" text-anchor="middle">TRASEIRA (FUNDO) ➡️</text>
+
+            <!-- Carroceria Amarela -->
+            <path d="M 25,135 L 20,35 Q 20,15 45,15 L 670,15 Q 695,15 695,35 L 690,135 Z" fill="url(#gradAmareloLE)" stroke="#1e293b" stroke-width="2" />
+
+            <!-- Faixa Vermelha Separadora -->
+            <rect x="22" y="80" width="671" height="6" fill="#dc2626" />
+
+            <!-- Saia Inferior Azul -->
+            <path d="M 23,86 L 692,86 L 690,135 L 24,135 Z" fill="url(#gradAzulLE)" />
+
+            <!-- Janelas Contínuas -->
+            ${svgJanelas}
+
+            <!-- Rodas & Arcos -->
+            <!-- Roda Dianteira -->
+            <path d="M 125,135 A 25,25 0 0 1 175,135 Z" fill="#0b0e14" />
+            <circle cx="150" cy="135" r="21" fill="#1e293b" stroke="#475569" stroke-width="2" />
+            <circle cx="150" cy="135" r="10" fill="#94a3b8" />
+
+            <!-- Roda Traseira -->
+            <path d="M 525,135 A 25,25 0 0 1 575,135 Z" fill="#0b0e14" />
+            <circle cx="550" cy="135" r="21" fill="#1e293b" stroke="#475569" stroke-width="2" />
+            <circle cx="550" cy="135" r="10" fill="#94a3b8" />
+
+            <!-- Inscrição Reginas -->
+            <text x="310" y="112" font-family="sans-serif" font-size="22" font-weight="900" font-style="italic" fill="#ffffff" opacity="0.95">Reginas</text>
+            <text x="500" y="112" font-family="monospace" font-size="12" font-weight="bold" fill="#ffffff">RJ ${carroInput && carroInput.value.trim() ? carroInput.value.trim() : '110.091'}</text>
+            <text x="610" y="112" font-family="sans-serif" font-size="18" font-weight="bold" fill="#ffffff">${carroInput && carroInput.value.trim() ? (carroInput.value.trim().split('.').pop() || carroInput.value.trim()) : '091'}</text>
+          </svg>
+        </div>
+
+        <!-- Seções Clicáveis da Carroceria L/E -->
+        <div class="grid-avarias-secoes grid-avarias-secoes--lateral">
+          <!-- Teto e Dianteira L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Teto e Coluna Diant.</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(115, 'Teto')}
+              ${criarChip(9, 'Col. Diant Queb')}
+              ${criarChip(11, 'Col. Diant Rasp')}
+              ${criarChip(13, 'Col. Sup Queb')}
+              ${criarChip(15, 'Col. Sup Rasp')}
+              ${criarChip(1, 'Pont. Diant Queb')}
+              ${criarChip(3, 'Pont. Diant Rasp')}
+            </div>
+          </div>
+
+          <!-- 1ª Chapa e 1ª Saia L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">1ª Chapa & 1ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(27, '1ª Chapa Amass')}
+              ${criarChip(29, '1ª Chapa Rasp')}
+              ${criarChip(31, '1ª Saia Amass')}
+              ${criarChip(33, '1ª Saia Rasp')}
+            </div>
+          </div>
+
+          <!-- Roda Dianteira L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Roda Diant. L/E</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(103, 'Arco Quebr')}
+              ${criarChip(105, 'Arco Rasp')}
+              ${criarChip(93, 'Pneu Cort')}
+              ${criarChip(95, 'Pneu Rasp')}
+              ${criarChip(111, 'Aro Amass')}
+            </div>
+          </div>
+
+          <!-- 2ª Chapa e 2ª Saia L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">2ª Chapa & 2ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(35, '2ª Chapa Amass')}
+              ${criarChip(37, '2ª Chapa Rasp')}
+              ${criarChip(39, '2ª Saia Amass')}
+              ${criarChip(41, '2ª Saia Rasp')}
+            </div>
+          </div>
+
+          <!-- 3ª Chapa e 3ª Saia L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">3ª Chapa & 3ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(43, '3ª Chapa Amass')}
+              ${criarChip(45, '3ª Chapa Rasp')}
+              ${criarChip(47, '3ª Saia Amass')}
+              ${criarChip(49, '3ª Saia Rasp')}
+            </div>
+          </div>
+
+          <!-- 4ª Chapa e 4ª Saia L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">4ª Chapa & 4ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(51, '4ª Chapa Amass')}
+              ${criarChip(53, '4ª Chapa Rasp')}
+              ${criarChip(55, '4ª Saia Amass')}
+              ${criarChip(57, '4ª Saia Rasp')}
+            </div>
+          </div>
+
+          <!-- 5ª Chapa e 5ª Saia L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">5ª Chapa & 5ª Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(59, '5ª Chapa Amass')}
+              ${criarChip(61, '5ª Chapa Rasp')}
+              ${criarChip(63, '5ª Saia Amass')}
+              ${criarChip(65, '5ª Saia Rasp')}
+            </div>
+          </div>
+
+          <!-- Roda Traseira L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Roda Tras. L/E</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(107, 'Arco Quebr')}
+              ${criarChip(109, 'Arco Rasp')}
+              ${criarChip(97, 'Pneu Cort')}
+              ${criarChip(99, 'Pneu Rasp')}
+              ${criarChip(101, 'Pneu Dentro Cort')}
+              ${criarChip(113, 'Aro Amass')}
+            </div>
+          </div>
+
+          <!-- 6ª Chapa e 6ª Saia L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">6ª Chapa & Saia</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(67, '6ª Chapa Amass')}
+              ${criarChip(69, '6ª Chapa Rasp')}
+              ${criarChip(71, '6ª Saia Rasp')}
+              ${criarChip(73, '6ª Saia Amass')}
+            </div>
+          </div>
+
+          ${isModelo2 ? `
+            <!-- 7ª Chapa e 7ª Saia L/E (Modelo 2 Longo) -->
+            <div class="secao-avaria-box">
+              <div class="secao-avaria-box__header">7ª Chapa & 7ª Saia</div>
+              <div class="secao-avaria-box__botoes">
+                ${criarChip(75, '7ª Chapa Amass')}
+                ${criarChip(77, '7ª Chapa Rasp')}
+                ${criarChip(79, '7ª Saia Rasp')}
+                ${criarChip(81, '7ª Saia Amass')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Coluna Traseira L/E -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Traseira & Acessórios</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(17, 'Col. Tras Queb')}
+              ${criarChip(19, 'Col. Tras Rasp')}
+              ${criarChip(21, 'Col. Sup Queb')}
+              ${criarChip(23, 'Col. Sup Rasp')}
+              ${criarChip(5, 'Pont. Tras Queb')}
+              ${criarChip(7, 'Pont. Tras Rasp')}
+              ${criarChip(123, 'Olho de Gato E')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Renderiza Vista Dianteira (Frente)
+  function renderizarDianteira() {
+    return `
+      <div class="onibus-esquema-card">
+        <div class="onibus-esquema-titulo">
+          <span>DIANTEIRA — FRENTE DO ÔNIBUS (PARABRISAS, FARÓIS, GRADE E PARA-CHOQUE)</span>
+        </div>
+
+        <div class="onibus-svg-container" style="max-width: 420px; margin: 0 auto;">
+          <svg viewBox="0 0 300 240" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+            <!-- Teto e Letreiro -->
+            <path d="M 40,30 Q 150,10 260,30 L 265,50 L 35,50 Z" fill="#ffd700" stroke="#1e293b" stroke-width="2" />
+            <rect x="60" y="24" width="180" height="20" rx="3" fill="#000000" stroke="#334155" stroke-width="1.5" />
+            <text x="150" y="38" fill="#ffea00" font-family="monospace" font-size="11" font-weight="bold" text-anchor="middle">416C CENTRAL</text>
+
+            <!-- Para-brisa E e D -->
+            <rect x="40" y="55" width="105" height="70" rx="4" fill="#0f172a" stroke="#00aaff" stroke-width="1.5" />
+            <rect x="155" y="55" width="105" height="70" rx="4" fill="#0f172a" stroke="#00aaff" stroke-width="1.5" />
+            <text x="92" y="92" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">PARA-BRISA E</text>
+            <text x="207" y="92" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">PARA-BRISA D</text>
+
+            <!-- Retrovisores Dianteiros -->
+            <!-- Esquerdo -->
+            <rect x="15" y="65" width="16" height="42" rx="3" fill="#1e293b" stroke="#e2e8f0" stroke-width="1" />
+            <line x1="31" y1="75" x2="39" y2="75" stroke="#94a3b8" stroke-width="3" />
+            <!-- Direito -->
+            <rect x="269" y="65" width="16" height="42" rx="3" fill="#1e293b" stroke="#e2e8f0" stroke-width="1" />
+            <line x1="261" y1="75" x2="269" y2="75" stroke="#94a3b8" stroke-width="3" />
+
+            <!-- Carroceria Frontal e Grade -->
+            <rect x="35" y="130" width="230" height="50" fill="#0284c7" />
+            <rect x="90" y="135" width="120" height="35" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+            <text x="150" y="157" fill="#ffffff" font-size="12" font-weight="900" text-anchor="middle">GRADE</text>
+
+            <!-- Faróis -->
+            <circle cx="65" cy="155" r="14" fill="#fef08a" stroke="#e2e8f0" stroke-width="2" />
+            <circle cx="235" cy="155" r="14" fill="#fef08a" stroke="#e2e8f0" stroke-width="2" />
+
+            <!-- Para-choque Frontal e Ponteiras -->
+            <rect x="25" y="185" width="250" height="30" rx="5" fill="#ffd700" stroke="#1e293b" stroke-width="2" />
+            <text x="150" y="204" fill="#000000" font-size="11" font-weight="bold" text-anchor="middle">PARA-CHOQUE DIANTEIRO</text>
+
+            <rect x="25" y="185" width="40" height="30" rx="3" fill="#ca8a04" opacity="0.4" />
+            <rect x="235" y="185" width="40" height="30" rx="3" fill="#ca8a04" opacity="0.4" />
+            <text x="45" y="226" font-size="9" fill="#00aaff" font-weight="bold" text-anchor="middle">PONT. E</text>
+            <text x="255" y="226" font-size="9" fill="#00aaff" font-weight="bold" text-anchor="middle">PONT. D</text>
+          </svg>
+        </div>
+
+        <div class="grid-avarias-secoes grid-avarias-secoes--frontal">
+          <!-- Vidros e Visores -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Vidros e Para-brisa</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(135, 'Vidro Vista Queb')}
+              ${criarChip(25, 'Parabrisa E Trinc')}
+              ${criarChip(26, 'Parabrisa D Trinc')}
+            </div>
+          </div>
+
+          <!-- Faróis E e D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Faróis</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(87, 'Lente Farol E')}
+              ${criarChip(89, 'Capa Farol E')}
+              ${criarChip(91, 'Farol E Avar')}
+              ${criarChip(88, 'Lente Farol D')}
+              ${criarChip(90, 'Capa Farol D')}
+              ${criarChip(92, 'Farol D Avar')}
+            </div>
+          </div>
+
+          <!-- Retrovisores E e D -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Retrovisores</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(117, 'Braço Retro E')}
+              ${criarChip(119, 'Lente Retro E')}
+              ${criarChip(121, 'Capa Retro E')}
+              ${criarChip(118, 'Braço Retro D')}
+              ${criarChip(120, 'Lente Retro D')}
+              ${criarChip(122, 'Capa Retro D')}
+            </div>
+          </div>
+
+          <!-- Grade e Para-choque Dianteiro -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Grade & Para-choque</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(129, 'Grade Sup Rasp')}
+              ${criarChip(130, 'Grade Sup Queb')}
+              ${criarChip(131, 'Grade Inf Rasp')}
+              ${criarChip(132, 'Grade Inf Queb')}
+              ${criarChip(127, 'Parachoque Diant Rasp')}
+              ${criarChip(128, 'Parachoque Diant Queb')}
+              ${criarChip(1, 'Pont. Diant E Queb')}
+              ${criarChip(3, 'Pont. Diant E Rasp')}
+              ${criarChip(2, 'Pont. Diant D Queb')}
+              ${criarChip(4, 'Pont. Diant D Rasp')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Renderiza Vista Traseira
+  function renderizarTraseira() {
+    return `
+      <div class="onibus-esquema-card">
+        <div class="onibus-esquema-titulo">
+          <span>TRASEIRA — PARTE POSTERIOR (VIGIA, CHAPA TRASEIRA, LANTERNAS E PARA-CHOQUE)</span>
+        </div>
+
+        <div class="onibus-svg-container" style="max-width: 420px; margin: 0 auto;">
+          <svg viewBox="0 0 300 240" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+            <!-- Teto Traseiro -->
+            <path d="M 40,25 Q 150,15 260,25 L 265,45 L 35,45 Z" fill="#ffd700" stroke="#1e293b" stroke-width="2" />
+
+            <!-- Vigia Traseiro (Vidro) -->
+            <rect x="50" y="45" width="200" height="75" rx="6" fill="#0f172a" stroke="#00aaff" stroke-width="2" />
+            <text x="150" y="88" fill="#ffffff" font-size="16" font-weight="bold" text-anchor="middle">VIGIA</text>
+
+            <!-- Chapa Traseira Azul/Amarela -->
+            <rect x="35" y="125" width="230" height="60" fill="#0284c7" stroke="#1e293b" stroke-width="1.5" />
+            <text x="150" y="155" fill="#ffffff" font-size="15" font-weight="900" font-style="italic" text-anchor="middle">Reginas</text>
+            <text x="150" y="175" fill="#fef08a" font-size="10" font-weight="bold" text-anchor="middle">CHAPA TRASEIRA</text>
+
+            <!-- Lanternas Traseiras Verticais -->
+            <!-- Esquerda -->
+            <rect x="38" y="132" width="15" height="48" rx="3" fill="#dc2626" stroke="#ffffff" stroke-width="1" />
+            <!-- Direita -->
+            <rect x="247" y="132" width="15" height="48" rx="3" fill="#dc2626" stroke="#ffffff" stroke-width="1" />
+
+            <!-- Para-choque Traseiro e Ponteiras -->
+            <rect x="25" y="190" width="250" height="30" rx="5" fill="#ffd700" stroke="#1e293b" stroke-width="2" />
+            <text x="150" y="209" fill="#000000" font-size="11" font-weight="bold" text-anchor="middle">PARACHOQUE TRASEIRO</text>
+
+            <rect x="25" y="190" width="40" height="30" rx="3" fill="#ca8a04" opacity="0.4" />
+            <rect x="235" y="190" width="40" height="30" rx="3" fill="#ca8a04" opacity="0.4" />
+            <text x="45" y="232" font-size="9" fill="#00aaff" font-weight="bold" text-anchor="middle">PONT. E</text>
+            <text x="255" y="232" font-size="9" fill="#00aaff" font-weight="bold" text-anchor="middle">PONT. D</text>
+          </svg>
+        </div>
+
+        <div class="grid-avarias-secoes grid-avarias-secoes--frontal">
+          <!-- Vigia -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Vidro Traseiro</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(134, 'Vigia Quebrado')}
+            </div>
+          </div>
+
+          <!-- Lanternas Traseiras -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Lanternas</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(83, 'Lanterna E Avar')}
+              ${criarChip(85, 'Capa Lanterna E')}
+              ${criarChip(84, 'Lanterna D Avar')}
+              ${criarChip(86, 'Capa Lanterna D')}
+            </div>
+          </div>
+
+          <!-- Para-choque Traseiro & Ponteiras -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Para-choque & Ponteiras</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(125, 'Parachoque Tras Rasp')}
+              ${criarChip(126, 'Parachoque Tras Queb')}
+              ${criarChip(5, 'Pont. Tras E Queb')}
+              ${criarChip(7, 'Pont. Tras E Rasp')}
+              ${criarChip(6, 'Pont. Tras D Queb')}
+              ${criarChip(8, 'Pont. Tras D Rasp')}
+            </div>
+          </div>
+
+          <!-- Colunas Traseiras -->
+          <div class="secao-avaria-box">
+            <div class="secao-avaria-box__header">Colunas Traseiras</div>
+            <div class="secao-avaria-box__botoes">
+              ${criarChip(17, 'Col. Tras E Queb')}
+              ${criarChip(19, 'Col. Tras E Rasp')}
+              ${criarChip(21, 'Col. Sup Tras E Queb')}
+              ${criarChip(23, 'Col. Sup Tras E Rasp')}
+              ${criarChip(18, 'Col. Tras D Queb')}
+              ${criarChip(20, 'Col. Tras D Rasp')}
+              ${criarChip(22, 'Col. Sup Tras D Queb')}
+              ${criarChip(24, 'Col. Sup Tras D Rasp')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Renderiza Todos os Códigos (1 a 144) com Busca Instantânea
+  function renderizarListaCompleta() {
+    return `
+      <div class="lista-completa-container">
+        <input type="text" id="inputBuscaAvarias" class="lista-completa-busca" placeholder="🔍 Pesquisar código ou avaria (ex: 28, chapa, parabrisa, pneu, grade)..." />
+
+        <div class="lista-completa-grid" id="gridListaCompleta">
+          ${TABELA_AVARIAS_144.map(item => `
+            <div class="item-codigo-card ${avariasSelecionadas.has(item.cod) ? 'is-active' : ''}" data-cod="${item.cod}">
+              <span class="item-codigo-card__cod">${item.cod}</span>
+              <span class="item-codigo-card__nome">${item.nome}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Renderiza a vista selecionada
+  function atualizarVista() {
+    if (vistaAtual === 'LD') {
+      containerVistas.innerHTML = renderizarLadoDireito();
+    } else if (vistaAtual === 'LE') {
+      containerVistas.innerHTML = renderizarLadoEsquerdo();
+    } else if (vistaAtual === 'DIAN') {
+      containerVistas.innerHTML = renderizarDianteira();
+    } else if (vistaAtual === 'TRAS') {
+      containerVistas.innerHTML = renderizarTraseira();
+    } else if (vistaAtual === 'LISTA') {
+      containerVistas.innerHTML = renderizarListaCompleta();
+
+      // Vincula o campo de pesquisa instantânea
+      const buscaInput = document.getElementById('inputBuscaAvarias');
+      const grid = document.getElementById('gridListaCompleta');
+      if (buscaInput && grid) {
+        buscaInput.addEventListener('input', () => {
+          const termo = buscaInput.value.trim().toLowerCase();
+          grid.querySelectorAll('.item-codigo-card').forEach(card => {
+            const cod = card.getAttribute('data-cod');
+            const nome = card.querySelector('.item-codigo-card__nome').textContent.toLowerCase();
+            if (!termo || cod.includes(termo) || nome.includes(termo)) {
+              card.style.display = 'flex';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      }
+    }
+
+    // Vincula cliques aos botões da vista recém-renderizada
+    vincularCliquesBotoes();
+    sincronizarEstadoVisual();
+  }
+
+  // Vincula os cliques em qualquer chip ou card
+  function vincularCliquesBotoes() {
+    containerVistas.querySelectorAll('.btn-avaria-chip').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cod = parseInt(btn.getAttribute('data-cod'), 10);
+        alternarAvaria(cod);
+      });
+    });
+
+    containerVistas.querySelectorAll('.item-codigo-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cod = parseInt(card.getAttribute('data-cod'), 10);
+        alternarAvaria(cod);
+      });
+    });
+  }
+
+  // Eventos das Abas de Vistas
+  tabBtns.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabBtns.forEach(t => {
+        t.classList.remove('is-active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('is-active');
+      tab.setAttribute('aria-selected', 'true');
+      vistaAtual = tab.getAttribute('data-vista');
+      atualizarVista();
+    });
+  });
+
+  // Eventos do Seletor de Modelo
+  if (btnModelo1 && btnModelo2) {
+    btnModelo1.addEventListener('click', () => {
+      modeloAtual = 1;
+      btnModelo1.classList.add('is-active');
+      btnModelo2.classList.remove('is-active');
+      atualizarVista();
+    });
+
+    btnModelo2.addEventListener('click', () => {
+      modeloAtual = 2;
+      btnModelo2.classList.add('is-active');
+      btnModelo1.classList.remove('is-active');
+      atualizarVista();
+    });
+  }
+
+  // Atalhos Rápidos 143 e 144
+  if (btnAtalho143) {
+    btnAtalho143.addEventListener('click', () => alternarAvaria(143));
+  }
+  if (btnAtalho144) {
+    btnAtalho144.addEventListener('click', () => alternarAvaria(144));
+  }
+
+  // Botão Limpar Seleções
+  if (btnLimpar) {
+    btnLimpar.addEventListener('click', limparTodasAvarias);
+  }
+
+  // Renderiza Histórico de Avarias Gravadas
+  function renderizarHistorico() {
+    if (!containerHistorico) return;
+    const lista = carregarAvarias();
+    containerHistorico.innerHTML = '';
+
+    if (lista.length === 0) {
+      containerHistorico.innerHTML = '<p style="color: #666666; font-size: 0.9rem; text-align: center; padding: 20px 10px;">Nenhuma avaria registrada. Marque os itens no ônibus acima e clique em Inserir.</p>';
+      return;
+    }
+
+    lista.forEach((avaria, index) => {
+      const card = document.createElement('div');
+      card.className = 'item-avaria-card';
+
+      card.innerHTML = `
+        <span class="dado-escala col-avaria-data-dado">${avaria.data || '--'}</span>
+        <span class="dado-escala col-avaria-carro-dado">${avaria.carro || '--'}</span>
+        <span class="dado-escala col-avaria-descricao-dado" title="${avaria.descricao || ''}">${avaria.descricao || '--'}</span>
+        <button type="button" class="btn-excluir-item" aria-label="Excluir avaria" data-index="${index}">&#x2715;</button>
+      `;
+
+      const btnExcluir = card.querySelector('.btn-excluir-item');
+      if (btnExcluir) {
+        btnExcluir.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btnExcluir.getAttribute('data-index'), 10);
+          const listaAtualizada = carregarAvarias();
+          listaAtualizada.splice(idx, 1);
+          localStorage.setItem(AVARIAS_STORAGE_KEY, JSON.stringify(listaAtualizada));
+          renderizarHistorico();
+        });
+      }
+
+      containerHistorico.appendChild(card);
+    });
+  }
+
+  // Submissão do Formulário
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const novaAvaria = {
+      data: dataInput ? dataInput.value.trim() : '',
+      carro: carroInput ? carroInput.value.trim().toUpperCase() : '',
+      descricao: descInput ? descInput.value.trim() : '',
+      codigos: Array.from(avariasSelecionadas).sort((a, b) => a - b)
+    };
+
+    if (!novaAvaria.carro || !novaAvaria.descricao) {
+      alert('Por favor, informe o número do Carro e clique nas avarias do ônibus antes de inserir.');
+      return;
+    }
+
+    const listaAtual = carregarAvarias();
+    listaAtual.unshift(novaAvaria); // Mais recentes no topo
+    localStorage.setItem(AVARIAS_STORAGE_KEY, JSON.stringify(listaAtual));
+
+    // Limpa a seleção e o campo após gravar
+    limparTodasAvarias();
+
+    renderizarHistorico();
+  });
+
+  // Inicialização
+  atualizarVista();
+  renderizarHistorico();
 }
 
 
@@ -991,6 +2404,7 @@ function initJornadaModule() {
   const inputValidadorGratuidade = document.getElementById('inputValidadorGratuidade');
   const inputValidadorVales = document.getElementById('inputValidadorVales');
   const inputValidadorQrCode = document.getElementById('inputValidadorQrCode');
+  const inputValidadorPagantes = document.getElementById('inputValidadorPagantes');
 
   // Campos de Filipeta Informações
   const inputFilipetaCarro = document.getElementById('inputFilipetaCarro');
@@ -1101,11 +2515,13 @@ function initJornadaModule() {
           const gratInp = r.querySelector('.validador-gratuidade-item');
           const valesInp = r.querySelector('.validador-vales-item');
           const qrInp = r.querySelector('.validador-qrcode-item');
+          const pagInp = r.querySelector('.validador-pagantes-item');
           dadosValidadorPorCarro[carro] = {
             carro: carro,
             gratuidade: gratInp ? gratInp.value.trim() : '',
             valesTransporte: valesInp ? valesInp.value.trim() : '',
-            qrCode: qrInp ? qrInp.value.trim() : ''
+            qrCode: qrInp ? qrInp.value.trim() : '',
+            pagantes: pagInp ? pagInp.value.trim() : ''
           };
         }
       });
@@ -1131,6 +2547,72 @@ function initJornadaModule() {
           };
         }
       });
+    }
+  }
+
+  // Cálculo automático do campo Pagantes no Validador:
+  // (passageiros - gratuidade - vale transportes - qrcode = Pagantes)
+  function calcularTodosValidadorPagantes() {
+    if (containerValidadorLinhas) {
+      const rowsVal = containerValidadorLinhas.querySelectorAll('.form-jornada-row--validador');
+      rowsVal.forEach(r => {
+        const c = r.getAttribute('data-carro');
+        let passVal = 0;
+        let temPassageiros = false;
+
+        // 1. Tenta buscar no container de roletas para o carro específico
+        if (containerRoletasTotaisLinhas) {
+          const rowRoleta = c 
+            ? containerRoletasTotaisLinhas.querySelector(`.form-jornada-row--roletas-total[data-carro="${c}"]`)
+            : containerRoletasTotaisLinhas.querySelector('.form-jornada-row--roletas-total');
+          if (rowRoleta) {
+            const inpPass = rowRoleta.querySelector('.input-roleta-pass-item');
+            if (inpPass && inpPass.value !== '' && inpPass.value !== '--') {
+              passVal = parseFloat(String(inpPass.value).replace(/\D/g, '')) || 0;
+              temPassageiros = true;
+            }
+          }
+        }
+
+        // 2. Se não encontrou, busca no campo geral inputRoletaPassageiros
+        if (!temPassageiros && inputRoletaPassageiros && inputRoletaPassageiros.value !== '' && inputRoletaPassageiros.value !== '--') {
+          passVal = parseFloat(String(inputRoletaPassageiros.value).replace(/\D/g, '')) || 0;
+          temPassageiros = true;
+        }
+
+        const gratInp = r.querySelector('.validador-gratuidade-item');
+        const valesInp = r.querySelector('.validador-vales-item');
+        const qrInp = r.querySelector('.validador-qrcode-item');
+        const pagInp = r.querySelector('.validador-pagantes-item');
+
+        if (pagInp) {
+          if (temPassageiros) {
+            const grat = parseFloat(String(gratInp?.value || '').replace(/\D/g, '')) || 0;
+            const vales = parseFloat(String(valesInp?.value || '').replace(/\D/g, '')) || 0;
+            const qr = parseFloat(String(qrInp?.value || '').replace(/\D/g, '')) || 0;
+            const pagantes = passVal - grat - vales - qr;
+            pagInp.value = pagantes >= 0 ? pagantes : 0;
+          } else {
+            pagInp.value = '';
+          }
+        }
+      });
+    } else if (inputValidadorPagantes) {
+      let passVal = 0;
+      let temPassageiros = false;
+      if (inputRoletaPassageiros && inputRoletaPassageiros.value !== '' && inputRoletaPassageiros.value !== '--') {
+        passVal = parseFloat(String(inputRoletaPassageiros.value).replace(/\D/g, '')) || 0;
+        temPassageiros = true;
+      }
+      if (temPassageiros) {
+        const grat = parseFloat(String(inputValidadorGratuidade?.value || '').replace(/\D/g, '')) || 0;
+        const vales = parseFloat(String(inputValidadorVales?.value || '').replace(/\D/g, '')) || 0;
+        const qr = parseFloat(String(inputValidadorQrCode?.value || '').replace(/\D/g, '')) || 0;
+        const pagantes = passVal - grat - vales - qr;
+        inputValidadorPagantes.value = pagantes >= 0 ? pagantes : 0;
+      } else {
+        inputValidadorPagantes.value = '';
+      }
     }
   }
 
@@ -1167,6 +2649,7 @@ function initJornadaModule() {
         const idGratAttr = isTop ? 'id="inputValidadorGratuidade"' : `id="inputValidadorGratuidade_${c}"`;
         const idValesAttr = isTop ? 'id="inputValidadorVales"' : `id="inputValidadorVales_${c}"`;
         const idQrAttr = isTop ? 'id="inputValidadorQrCode"' : `id="inputValidadorQrCode_${c}"`;
+        const idPagAttr = isTop ? 'id="inputValidadorPagantes"' : `id="inputValidadorPagantes_${c}"`;
         const val = dadosValidadorPorCarro[c] || {};
         return `
           <div class="form-escala-row form-jornada-row--validador" data-carro="${c}">
@@ -1174,16 +2657,20 @@ function initJornadaModule() {
             <input type="text" ${idGratAttr} class="input-escala input-jornada-info validador-gratuidade-item" data-carro="${c}" value="${val.gratuidade || ''}" placeholder="Gratuidade" inputmode="numeric" />
             <input type="text" ${idValesAttr} class="input-escala input-jornada-info validador-vales-item" data-carro="${c}" value="${val.valesTransporte || ''}" placeholder="Vales Transp." inputmode="numeric" />
             <input type="text" ${idQrAttr} class="input-escala input-jornada-info validador-qrcode-item" data-carro="${c}" value="${val.qrCode || ''}" placeholder="QrCode" inputmode="numeric" />
+            <input type="text" ${idPagAttr} class="input-escala input-jornada-info validador-pagantes-item" data-carro="${c}" value="${val.pagantes !== undefined ? val.pagantes : ''}" placeholder="Pagantes" readonly />
           </div>
         `;
       }).join('');
 
       containerValidadorLinhas.querySelectorAll('input').forEach(inp => {
         inp.addEventListener('input', () => {
+          calcularTodosValidadorPagantes();
           coletarValoresCamposMultiCarro();
           salvarRascunhoJornada();
         });
       });
+
+      calcularTodosValidadorPagantes();
     }
 
     // 3. Filipeta Informações
@@ -1270,7 +2757,8 @@ function initJornadaModule() {
           carro: inputValidadorCarro ? inputValidadorCarro.value : '',
           gratuidade: inputValidadorGratuidade ? inputValidadorGratuidade.value : '',
           valesTransporte: inputValidadorVales ? inputValidadorVales.value : '',
-          qrCode: inputValidadorQrCode ? inputValidadorQrCode.value : ''
+          qrCode: inputValidadorQrCode ? inputValidadorQrCode.value : '',
+          pagantes: inputValidadorPagantes ? inputValidadorPagantes.value : ''
         },
         filipeta: {
           carro: inputFilipetaCarro ? inputFilipetaCarro.value : '',
@@ -1370,6 +2858,8 @@ function initJornadaModule() {
         if (inputValidadorGratuidade && rascunho.validador.gratuidade) inputValidadorGratuidade.value = rascunho.validador.gratuidade;
         if (inputValidadorVales && rascunho.validador.valesTransporte) inputValidadorVales.value = rascunho.validador.valesTransporte;
         if (inputValidadorQrCode && rascunho.validador.qrCode) inputValidadorQrCode.value = rascunho.validador.qrCode;
+        if (inputValidadorPagantes && rascunho.validador.pagantes !== undefined) inputValidadorPagantes.value = rascunho.validador.pagantes;
+        calcularTodosValidadorPagantes();
       }
 
       // Filipeta
@@ -1508,6 +2998,7 @@ function initJornadaModule() {
       if (inputValidadorGratuidade) inputValidadorGratuidade.value = jornada.validador.gratuidade || '';
       if (inputValidadorVales) inputValidadorVales.value = jornada.validador.valesTransporte || '';
       if (inputValidadorQrCode) inputValidadorQrCode.value = jornada.validador.qrCode || '';
+      if (inputValidadorPagantes) inputValidadorPagantes.value = (jornada.validador && jornada.validador.pagantes !== undefined) ? jornada.validador.pagantes : '';
     }
     if (jornada.filipeta) {
       const c = jornada.filipeta.carro || jornada.carroNumero || '';
@@ -1519,6 +3010,8 @@ function initJornadaModule() {
       if (inputFilipetaVales) inputFilipetaVales.value = jornada.filipeta.valesTransporte || '';
       if (inputFilipetaPassageiros) inputFilipetaPassageiros.value = jornada.filipeta.passageiros || '';
     }
+
+    calcularTodosValidadorPagantes();
 
     // Etapas anteriores em andamento
     if (Array.isArray(jornada.etapas) && jornada.etapas.length > 1) {
@@ -1585,6 +3078,7 @@ function initJornadaModule() {
     if (inputRoletaInicial) inputRoletaInicial.value = '';
     if (inputRoletaFinal) inputRoletaFinal.value = '';
     if (inputRoletaPassageiros) inputRoletaPassageiros.value = '';
+    if (inputValidadorPagantes) inputValidadorPagantes.value = '';
 
     dadosValidadorPorCarro = {};
     dadosFilipetaPorCarro = {};
@@ -1629,7 +3123,8 @@ function initJornadaModule() {
       carro: cNum,
       gratuidade: inputValidadorGratuidade ? inputValidadorGratuidade.value.trim() : '',
       valesTransporte: inputValidadorVales ? inputValidadorVales.value.trim() : '',
-      qrCode: inputValidadorQrCode ? inputValidadorQrCode.value.trim() : ''
+      qrCode: inputValidadorQrCode ? inputValidadorQrCode.value.trim() : '',
+      pagantes: inputValidadorPagantes ? inputValidadorPagantes.value.trim() : ''
     };
 
     const filDado = dadosFilipetaPorCarro[cNum] || {
@@ -1868,7 +3363,7 @@ function initJornadaModule() {
         </div>
       ` : ''}
 
-      ${dados.validador && (dados.validador.gratuidade || dados.validador.valesTransporte || dados.validador.qrCode) ? `
+      ${dados.validador && (dados.validador.gratuidade || dados.validador.valesTransporte || dados.validador.qrCode || dados.validador.pagantes) ? `
         <div class="jornada-divisor-linha" style="opacity:0.35; margin: 4px 0;" aria-hidden="true"></div>
         <div class="item-jornada-row item-jornada-row--validador">
           <div class="item-jornada-ponto-box">
@@ -1886,6 +3381,10 @@ function initJornadaModule() {
           <div class="item-jornada-ponto-box">
             <span class="col-jornada-km-tag">QrCode</span>
             <span class="col-jornada-km-val">${dados.validador.qrCode || '--'}</span>
+          </div>
+          <div class="item-jornada-ponto-box">
+            <span class="col-jornada-km-tag">Pagantes</span>
+            <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.validador.pagantes !== undefined && dados.validador.pagantes !== '' ? dados.validador.pagantes : ((dados.roletaPassageiros && !isNaN(parseFloat(String(dados.roletaPassageiros).replace(/\D/g, '')))) ? Math.max(0, parseFloat(String(dados.roletaPassageiros).replace(/\D/g, '')) - (parseFloat(String(dados.validador.gratuidade || '').replace(/\D/g, '')) || 0) - (parseFloat(String(dados.validador.valesTransporte || '').replace(/\D/g, '')) || 0) - (parseFloat(String(dados.validador.qrCode || '').replace(/\D/g, '')) || 0)) : '--')}</span>
           </div>
         </div>
       ` : ''}
@@ -2491,7 +3990,8 @@ function initJornadaModule() {
             carro: mesclarCampo(novaJornada.validador?.carro, existente.validador?.carro || existente.carroNumero),
             gratuidade: mesclarCampo(novaJornada.validador?.gratuidade, existente.validador?.gratuidade),
             valesTransporte: mesclarCampo(novaJornada.validador?.valesTransporte, existente.validador?.valesTransporte),
-            qrCode: mesclarCampo(novaJornada.validador?.qrCode, existente.validador?.qrCode)
+            qrCode: mesclarCampo(novaJornada.validador?.qrCode, existente.validador?.qrCode),
+            pagantes: mesclarCampo(novaJornada.validador?.pagantes, existente.validador?.pagantes)
           },
 
           filipeta: {
@@ -2541,6 +4041,18 @@ function initJornadaModule() {
           }
         } else {
           jornadaAtualizada.roletaPassageiros = mesclarCampo(novaJornada.roletaPassageiros, existente.roletaPassageiros);
+        }
+
+        // Recalcular Pagantes Validador (passageiros - gratuidade - valesTransporte - qrCode)
+        const vPass = parseFloat(String(jornadaAtualizada.roletaPassageiros || '').replace(/\D/g, ''));
+        if (!isNaN(vPass) && jornadaAtualizada.roletaPassageiros !== '' && jornadaAtualizada.roletaPassageiros !== '--') {
+          const vGrat = parseFloat(String(jornadaAtualizada.validador.gratuidade || '').replace(/\D/g, '')) || 0;
+          const vVales = parseFloat(String(jornadaAtualizada.validador.valesTransporte || '').replace(/\D/g, '')) || 0;
+          const vQr = parseFloat(String(jornadaAtualizada.validador.qrCode || '').replace(/\D/g, '')) || 0;
+          const vPag = vPass - vGrat - vVales - vQr;
+          jornadaAtualizada.validador.pagantes = String(vPag >= 0 ? vPag : 0);
+        } else if (novaJornada.validador?.pagantes) {
+          jornadaAtualizada.validador.pagantes = novaJornada.validador.pagantes;
         }
 
         // Recalcular Passageiros Filipeta se estiver vazio
@@ -3035,6 +4547,7 @@ function initJornadaModule() {
         if (inputRoletaPassageiros) inputRoletaPassageiros.value = '';
       }
     }
+    calcularTodosValidadorPagantes();
   }
 
   function vincularLinhaDados(linhaEl) {
@@ -3267,8 +4780,23 @@ function initJornadaModule() {
   /* --- Restauração de Rascunho Offline da Jornada --- */
   restaurarRascunhoJornada();
   renderizarSecoesMultiCarro();
+  calcularTodosValidadorPagantes();
 
   /* --- Eventos de Salvamento de Rascunho em Tempo Real --- */
+  if (containerValidadorLinhas) {
+    containerValidadorLinhas.addEventListener('input', (e) => {
+      if (e.target && e.target.classList && (
+        e.target.classList.contains('validador-gratuidade-item') ||
+        e.target.classList.contains('validador-vales-item') ||
+        e.target.classList.contains('validador-qrcode-item')
+      )) {
+        calcularTodosValidadorPagantes();
+        coletarValoresCamposMultiCarro();
+        salvarRascunhoJornada();
+      }
+    });
+  }
+
   if (form) {
     form.addEventListener('input', salvarRascunhoJornada);
     form.addEventListener('change', salvarRascunhoJornada);
@@ -3296,6 +4824,7 @@ function initApp() {
     initMotoristasModule();
     initMotoristaAutoLookup();
     initCarrosModule();
+    initAvariasModule();
     initJornadaModule();
     registerDeviceResizeListener();
     console.info(`[App] Sistema pronto no modo: ${deviceType}`);
