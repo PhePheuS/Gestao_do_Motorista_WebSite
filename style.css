@@ -1,1506 +1,2406 @@
+/*
+  ============================================================
+  CONTROLE DO MOTORISTA — Sistema Profissional de Gestão
+  Arquivo: style.css
+  Descrição: Identidade visual completa, sistema de variáveis,
+             layout responsivo, detecção de dispositivos via
+             classes injetadas pelo JS e estilização dos cards.
+  Arquitetura: CSS Vanilla (sem frameworks) — GitHub Pages Ready
+  ============================================================
+*/
+
+
+/* ============================================================
+   1. IMPORTAÇÃO DE TIPOGRAFIA (Google Fonts)
+   Fonte principal: Rajdhani — industrial, legível e moderna.
+   Fonte do relógio: Share Tech Mono — aspecto de display LCD.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+
+/* ============================================================
+   2. VARIÁVEIS GLOBAIS — DESIGN TOKENS
+   Paleta escura corporativa com azul industrial e cinza.
+   Otimizada para motoristas em ambientes variáveis de luz.
+   ============================================================ */
 :root {
-    --bg-color: #0d1117;
-    --card-bg: #161b22;
-    --accent-blue: #2f81f7;
-    --text-label: #8b949e;
-    --text-value: #c9d1d9;
-    --border-color: #30363d;
-    --font-main: 'Inter', sans-serif;
-    --font-header: 'Outfit', sans-serif;
+  /* --- Paleta de Cores Principal --- */
+  --color-bg-deep:        #080f1a;  /* Fundo mais profundo (base da página)    */
+  --color-bg-surface:     #0d1b2e;  /* Superfície principal (background body)  */
+  --color-bg-elevated:    #112240;  /* Superfície elevada (header, seções)     */
+  --color-bg-card:        #172b4d;  /* Background dos cards                    */
+  --color-bg-card-hover:  #1e3a6a;  /* Background dos cards em hover           */
+
+  /* --- Paleta de Destaque (Azul Elétrico) --- */
+  --color-accent-primary:   #00aaff;  /* Azul elétrico — ação primária         */
+  --color-accent-secondary: #0066cc;  /* Azul médio — variação secundária      */
+  --color-accent-glow:      rgba(0, 170, 255, 0.25); /* Brilho difuso do azul */
+
+  /* --- Cores de Estado --- */
+  --color-success:  #00e676;  /* Verde — status OK / relógio ativo             */
+  --color-warning:  #ffab00;  /* Âmbar — atenção                               */
+  --color-danger:   #ff5252;  /* Vermelho — erro ou alerta crítico             */
+  --color-info:     #40c4ff;  /* Azul claro — informação                       */
+
+  /* --- Tipografia --- */
+  --color-text-primary:   #e8f0fe;  /* Texto principal — alto contraste        */
+  --color-text-secondary: #8baac8;  /* Texto secundário — descritivo           */
+  --color-text-muted:     #4a6a8a;  /* Texto silenciado — rodapé, labels       */
+
+  /* --- Bordas e Separadores --- */
+  --color-border-subtle:  rgba(0, 170, 255, 0.12);  /* Borda muito sutil      */
+  --color-border-medium:  rgba(0, 170, 255, 0.25);  /* Borda média            */
+  --color-border-strong:  rgba(0, 170, 255, 0.5);   /* Borda de destaque      */
+
+  /* --- Sombras --- */
+  --shadow-card:        0 4px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(0, 170, 255, 0.15);
+  --shadow-card-hover:  0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 170, 255, 0.2);
+  --shadow-clock:       0 0 40px rgba(0, 170, 255, 0.3), 0 0 80px rgba(0, 170, 255, 0.1);
+  --shadow-header:      0 2px 20px rgba(0, 0, 0, 0.4);
+  --shadow-inset:       inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* --- Bordas Arredondadas --- */
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   24px;
+  --radius-xl:   32px;
+  --radius-pill: 999px;
+
+  /* --- Espaçamentos (escala de 4px) --- */
+  --space-1:  0.25rem;   /*  4px */
+  --space-2:  0.5rem;    /*  8px */
+  --space-3:  0.75rem;   /* 12px */
+  --space-4:  1rem;      /* 16px */
+  --space-5:  1.25rem;   /* 20px */
+  --space-6:  1.5rem;    /* 24px */
+  --space-8:  2rem;      /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+
+  /* --- Tamanhos de Fonte --- */
+  --font-xs:   0.75rem;   /* 12px */
+  --font-sm:   0.875rem;  /* 14px */
+  --font-base: 1rem;      /* 16px */
+  --font-lg:   1.125rem;  /* 18px */
+  --font-xl:   1.25rem;   /* 20px */
+  --font-2xl:  1.5rem;    /* 24px */
+  --font-3xl:  1.875rem;  /* 30px */
+  --font-4xl:  2.25rem;   /* 36px */
+  --font-5xl:  3rem;      /* 48px */
+
+  /* --- Famílias de Fonte --- */
+  --font-family-ui:    'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  --font-family-mono:  'Share Tech Mono', 'Courier New', monospace;
+
+  /* --- Transições --- */
+  --transition-fast:    150ms ease;
+  --transition-normal:  300ms ease;
+  --transition-slow:    500ms ease;
+
+  /* --- Dimensões Máximas --- */
+  --max-width-content: 640px;  /* Largura máxima em tablets/desktops           */
 }
 
-*, *::before, *::after {
-    box-sizing: border-box;
+
+/* ============================================================
+   3. RESET E BASE GLOBAL
+   Reset normalizado + box-sizing universal para previsibilidade.
+   ============================================================ */
+
+/* Box-sizing universal — evita cálculos manuais de largura */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+/* Remove estilos padrão de listas */
+ul, ol {
+  list-style: none;
+}
+
+/* Imagens e mídias não transbordam seus containers */
+img, svg, video {
+  max-width: 100%;
+  display: block;
+}
+
+/* Remove sublinhado padrão de links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Botões herdam a família de fonte do projeto */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+
+/* ============================================================
+   4. ELEMENTO RAIZ — <html>
+   Define o tamanho base para cálculos rem e scroll suave.
+   ============================================================ */
+html {
+  /* Font-size base: 16px padrão — facilita cálculos rem */
+  font-size: 16px;
+
+  /* Scroll suave para âncoras internas */
+  scroll-behavior: smooth;
+
+  /* Evita zoom indesejado ao focar inputs em iOS */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+
+/* ============================================================
+   5. BODY — ESTRUTURA PRINCIPAL E LAYOUT BASE
+   Flexbox vertical centralizado. O background usa gradiente
+   radial para profundidade visual (efeito vinheta suave).
+   ============================================================ */
 body {
-    background-color: var(--bg-color);
-    color: var(--text-value);
-    font-family: var(--font-main);
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
+  /* Família de fonte padrão do sistema */
+  font-family: var(--font-family-ui);
+  font-size: var(--font-base);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+
+  /* Fundo preto puro — sem gradientes */
+  background-color: #000000;
+  background-image: none;
+
+  /* Layout principal: coluna centralizada */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic Viewport Height — melhor em mobile */
+
+  /* Padding com suporte a safe-area (notch do iPhone) */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, var(--space-8));
+  padding-left: env(safe-area-inset-left, 0px);
+
+  /* Evita overflow horizontal indesejado */
+  overflow-x: hidden;
+
+  /* Melhora a renderização de fontes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.app-container {
-    width: 100%;
-    max-width: 1100px;
-}
 
-/* Cabeçalho Principal Centralizado */
+/* ============================================================
+   6. CABEÇALHO — .app-header
+   Área de identidade: logo, título e subtítulo.
+   ============================================================ */
 .app-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin-bottom: 1.5rem;
-    gap: 0.75rem;
-    padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;         /* centraliza o bloco na página */
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6) var(--space-10);
+  width: 100%;
+  text-align: center;
 }
 
-.title-text-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+
+.app-logo {
+  color: var(--color-accent-primary);
+  filter: drop-shadow(0 0 8px var(--color-accent-glow));
+  transition: filter var(--transition-normal);
+  animation: pulse-glow 3s ease-in-out infinite;
 }
 
-.main-title {
-    font-family: var(--font-header);
-    font-size: 2.2rem;
-    color: #ffffff;
-    margin: 0;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+/* Título principal — branco, bold, limpo */
+.app-title {
+  font-size: var(--font-4xl);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+
+  /* Branco sólido — sem gradiente */
+  color: #ffffff;
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
 }
 
-.subtitle {
-    font-size: 0.95rem;
-    color: var(--text-label);
-    margin: 0.25rem 0 0 0;
-    font-weight: 500;
-    letter-spacing: 0.5px;
+/* Subtítulo — branco puro, centralizado, igual ao título */
+.app-subtitle {
+  font-size: var(--font-base);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-align: center;
+
+  /* Garante branco em todos os browsers, incluindo WebKit */
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
 }
 
+/* ============================================================
+   7. BARRA DE DATA E HORA — .datetime-container
+   Data e Relógio lado a lado, mesmo tamanho proporcional e harmonia.
+   ============================================================ */
+.datetime-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 0;
+  width: 100%;
+}
+
+/* Data Atual por Extenso — branca e alinhada */
+.app-date {
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  text-align: center;
+  line-height: 1;
+}
+
+/* Separador elegante entre data e hora */
+.datetime-separator {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  user-select: none;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Container do Relógio Integrado */
+.clock-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Display principal do relógio — HH:MM:SS */
 .clock-display {
-    font-family: var(--font-header);
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--accent-blue);
-    letter-spacing: 1.5px;
-    background: rgba(47, 129, 247, 0.1);
-    padding: 0.35rem 1.25rem;
-    border-radius: 20px;
-    border: 1px solid rgba(47, 129, 247, 0.25);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 10px rgba(47, 129, 247, 0.15);
-}
-
-/* Barra de Ações Centralizada */
-.action-bar {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 2rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.btn {
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    border: none;
-    font-family: var(--font-main);
-    font-weight: 600;
-    font-size: 0.92rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    white-space: nowrap;
-    text-decoration: none;
-    user-select: none;
-}
-
-/* Botão 1: Novo Lançamento (Azul Vibrante) */
-.btn-primary {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
-}
-
-.btn-primary:active {
-    transform: translateY(0);
-}
-
-/* Botão 2: WhatsApp (Verde Vibrante) */
-.btn-whatsapp {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-}
-
-.btn-whatsapp:hover {
-    background: linear-gradient(135deg, #4ade80, #22c55e);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.45);
-}
-
-.btn-whatsapp:active {
-    transform: translateY(0);
-}
-
-/* Botão 3: Imprimir / Salvar PDF (Roxo/Índigo Vibrante) */
-.btn-print {
-    background: linear-gradient(135deg, #7c3aed, #6d28d9);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
-}
-
-.btn-print:hover {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
-}
-
-.btn-print:active {
-    transform: translateY(0);
-}
-
-/* Botão 4: Histórico (Âmbar/Laranja Vibrante) */
-.btn-history {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
-}
-
-.btn-history:hover {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
-}
-
-.btn-history:active {
-    transform: translateY(0);
-}
-
-.btn-secondary {
-    background: var(--card-bg);
-    color: var(--text-value);
-    border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-    background: var(--border-color);
-}
-
-/* Print Settings */
-@media print {
-    @page {
-        size: auto;
-        margin: 5mm; /* Margens mínimas para caber tudo */
-    }
-    .no-print {
-        display: none !important;
-    }
-    body {
-        background: white !important;
-        color: black !important;
-        padding: 0;
-        font-size: 10pt; /* Fonte menor para impressão */
-    }
-    .app-container {
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-    .header-card, .main-table-container, .info-card {
-        border: 1px solid #ccc !important;
-        background: white !important;
-        box-shadow: none !important;
-        margin-bottom: 0.5rem !important; /* Espaço reduzido entre blocos */
-        padding: 0.8rem !important; /* Padding interno menor */
-    }
-    .header-item span, .header-input, .trip-input, .val-input {
-        color: black !important;
-        font-size: 10pt !important;
-    }
-    td, th {
-        padding: 4px 8px !important; /* Tabela mais compacta */
-    }
-    .divider {
-        font-size: 1.2rem !important;
-    }
-    /* Evitar quebras de página dentro dos cartões */
-    .info-card, .header-card, .main-table-container {
-        page-break-inside: avoid;
-        break-inside: avoid;
-    }
-
-    /* Forçar quebra de página: Validador (em cima) e Filipeta (abaixo) sempre na 2ª folha */
-    .bottom-grid {
-        break-before: page !important;
-        page-break-before: always !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 0.8rem !important;
-        margin-top: 0 !important;
-    }
-}
-
-/* Header Style based on Image 1 */
-.header-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem 2rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* 2 colunas */
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.header-item.item-linha, .header-item.item-carro-avarias {
-    grid-column: span 1; /* Ocupam 1 coluna cada (compartilhando a linha) */
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
-    margin-top: 0.5rem;
-}
-
-.field-group {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.5rem;
-}
-
-.sub-field {
-    flex: 1;
-}
-
-.sub-field:first-child {
-    flex: 0 0 100px; /* Largura fixa para o número da linha */
-}
-
-.divider {
-    flex: 0 0 auto;
-    color: var(--accent-blue);
-    font-size: 1.5rem;
-    font-weight: 300;
-    padding-bottom: 2px;
-}
-
-.header-item {
-    min-width: 0;
-}
-
-.header-item label {
-    display: block;
-    color: var(--text-label);
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 0.5rem;
-}
-
-.header-item span, .header-input {
-    background: transparent;
-    border: none;
-    color: var(--accent-blue);
-    font-size: 1rem; /* Reduzi levemente para caber melhor */
-    font-weight: 600;
-    width: 100%;
-    outline: none;
-    font-family: var(--font-main);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Se ainda assim for gigante, mostra ... mas o espaço agora é maior */
-}
-
-.header-input:focus {
-    background: rgba(47, 129, 247, 0.05);
-    border-radius: 4px;
-}
-
-.val-input {
-    background: transparent;
-    border: none;
-    color: var(--text-value);
-    font-weight: 600;
-    text-align: right;
-    width: 100px;
-    outline: none;
-    font-family: var(--font-main);
-}
-
-.val-input:focus {
-    color: var(--accent-blue);
-}
-
-/* Table Style */
-.main-table-container {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 2rem;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th {
-    background: rgba(255,255,255,0.02);
-    text-align: center;
-    padding: 1rem 0.5rem;
-    color: var(--text-label);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border-color);
-}
-
-td {
-    padding: 0.8rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.trip-input {
-    background: transparent;
-    border: none;
-    color: var(--text-value);
-    width: 100%;
-    font-size: 0.95rem;
-    text-align: center;
-}
-
-/* Bottom Grid for Validator and Filipeta */
-.bottom-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.info-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
-}
-
-.info-card h3 {
-    color: var(--text-label);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
-}
-
-.info-table-container {
-    width: 100%;
-    overflow-x: auto;
-    margin-top: 0.5rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-}
-
-.info-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-}
-
-.info-table th, .info-table td {
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    text-align: center;
-    vertical-align: middle;
-}
-
-.info-table td.label-col {
-    text-align: left;
-    font-weight: 600;
-    color: var(--text-label);
-    background: rgba(255, 255, 255, 0.02);
-    width: 160px;
-    min-width: 160px;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.info-table td.val-col {
-    color: var(--text-value);
-    min-width: 110px;
-}
-
-.info-table tr.total-row-style {
-    background: rgba(47, 129, 247, 0.02);
-    color: var(--accent-blue);
-    font-weight: 700;
-}
-
-.info-table tr.total-row-style td.label-col {
-    color: var(--accent-blue);
-}
-
-.info-table tr.total-row-style td.val-col span {
-    font-size: 1.1rem;
-}
-
-.info-table-input {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    color: var(--text-value);
-    font-weight: 600;
-    text-align: center;
-    width: 90%;
-    padding: 0.35rem;
-    outline: none;
-    font-family: var(--font-main);
-    transition: all 0.2s ease;
-}
-
-.info-table-input:focus {
-    color: var(--accent-blue);
-    border-color: var(--accent-blue);
-    background: rgba(47, 129, 247, 0.05);
-}
-
-.info-table-input::-webkit-outer-spin-button,
-.info-table-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.info-table-input[type=number] {
-    -moz-appearance: textfield;
-}
-
-.info-table-carro-val {
-    color: #f39c12;
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-.info-table-linha-val {
-    color: var(--accent-blue);
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-.row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.8rem;
-    font-size: 0.95rem;
-}
-
-.row .label { color: var(--text-label); }
-.row .val { font-weight: 600; }
-
-.total-row {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px dashed var(--border-color);
-    color: var(--accent-blue);
-    font-weight: 700;
-}
-
-
-.avaria-badge {
-    background: rgba(47, 129, 247, 0.1);
-    color: var(--accent-blue);
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    border: 1px solid rgba(47, 129, 247, 0.2);
-    font-weight: 600;
-}
-
-/* Estilos de Alerta e Erro */
-.input-error {
-    border: 2px solid #ef4444 !important;
-    background: rgba(239, 68, 68, 0.1) !important;
-    animation: pulse-red 1.5s infinite;
-}
-
-@keyframes pulse-red {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-#btn-undo {
-    background: #f59e0b;
-    color: #fff;
-    border: none;
-    margin-left: 1rem;
-    animation: slide-in 0.3s ease;
-}
-
-@keyframes slide-in {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-.btn-stamp {
-    width: 100%;
-    padding: 0.5rem 0.2rem;
-    border-radius: 6px;
-    border: none;
-    background: var(--accent-blue);
-    color: white;
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.btn-stamp:hover {
-    background: #1a6edb;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
-
-.btn-stamp:active {
-    transform: translateY(0);
-    filter: brightness(0.9);
-}
-
-#header-data {
-    border-bottom: 1px dashed rgba(47, 129, 247, 0.4);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-#header-data:hover {
-    border-bottom: 1px solid var(--accent-blue);
-    background: rgba(47, 129, 247, 0.03);
-    border-radius: 4px;
-}
-#header-data:focus {
-    border-bottom: 1px solid var(--accent-blue);
-    background: rgba(47, 129, 247, 0.08);
-    border-radius: 4px;
-}
-
-/* Modal WhatsApp */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(4px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    padding: 1rem;
-    animation: fadeIn 0.2s ease;
-}
-
-.modal-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    width: 100%;
-    max-width: 480px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-    animation: scaleUp 0.25s ease;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.btn-close {
-    background: transparent;
-    border: none;
-    color: var(--text-label);
-    font-size: 1.5rem;
-    cursor: pointer;
-    line-height: 1;
-    transition: color 0.2s;
-}
-
-.btn-close:hover {
-    color: #ef4444;
-}
-
-.modal-body {
-    padding: 1.25rem;
-}
-
-.modal-textarea {
-    width: 100%;
-    height: 140px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-value);
-    font-family: var(--font-main);
-    font-size: 0.85rem;
-    padding: 0.75rem;
-    resize: none;
-    margin-bottom: 1.2rem;
-    box-sizing: border-box;
-    line-height: 1.4;
-    outline: none;
-}
-
-.modal-actions-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-
-.btn-wa-option {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    color: var(--text-value);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    justify-content: flex-start;
-}
-
-.btn-wa-option:hover {
-    background: rgba(37, 211, 102, 0.1);
-    border-color: #25D366;
-    transform: translateY(-1px);
-}
-
-.btn-wa-option:active {
-    transform: translateY(0);
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes scaleUp {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* ==========================================================================
-   Responsividade: Tablets e iPads (Até 1024px)
-   ========================================================================== */
-@media (max-width: 1024px) {
-    body {
-        padding: 1rem;
-    }
-
-    .app-container {
-        max-width: 100%;
-    }
-
-    /* Cabeçalho em 1 coluna para Tablets e Celulares */
-    .header-card {
-        grid-template-columns: 1fr;
-        padding: 1.25rem;
-        gap: 1.25rem;
-    }
-
-    .header-item.item-carro-avarias,
-    .header-item.item-linha {
-        grid-column: span 1;
-        border-top: 1px solid var(--border-color);
-        padding-top: 1rem;
-        margin-top: 0.3rem;
-    }
-
-    /* Tabelas com Scroll Horizontal Suave */
-    .main-table-container,
-    .info-table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .main-table-container table {
-        min-width: 650px;
-    }
-}
-
-/* ==========================================================================
-   Responsividade: Smartphones (Até 600px)
-   ========================================================================== */
-@media (max-width: 600px) {
-    body {
-        padding: 0.8rem 0.5rem;
-    }
-
-    /* Barra de Ações em coluna para melhor toque */
-    .action-bar {
-        flex-direction: column;
-        gap: 0.6rem;
-        margin-bottom: 1.2rem;
-    }
-
-    .action-bar .btn {
-        width: 100%;
-        justify-content: center;
-        padding: 0.75rem 1rem;
-        font-size: 0.95rem;
-    }
-
-    /* Cabeçalho no Mobile (Centralizado) */
-    .app-header {
-        margin-bottom: 1.2rem;
-        gap: 0.5rem;
-        padding: 0;
-    }
-
-    .main-title {
-        font-size: 1.6rem;
-        text-align: center;
-    }
-
-    .subtitle {
-        font-size: 0.85rem;
-        text-align: center;
-    }
-
-    .clock-display {
-        font-size: 1.15rem;
-        padding: 0.3rem 0.9rem;
-    }
-
-    .field-group {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.6rem;
-    }
-
-    .field-group > div {
-        display: flex;
-        width: 100%;
-        gap: 0.5rem;
-    }
-
-    .main-table-container table {
-        min-width: 580px;
-    }
-
-    /* Resumo de Roletas em coluna */
-    #roleta-summary {
-        flex-direction: column;
-        gap: 0.8rem;
-    }
-
-    #roleta-summary .stat-item {
-        border-right: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        padding-bottom: 0.5rem;
-        padding-right: 0 !important;
-    }
-
-    .info-card {
-        padding: 1.1rem 0.9rem;
-    }
-}
-
-/* ==========================================================================
-   Histórico: Botões, Modais, Cards e Notificações
-   ========================================================================== */
-
-
-/* Botão Salvar Histórico (Badge) */
-.btn-save-badge {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: #ffffff;
-    border: none;
-    padding: 0.25rem 0.65rem;
-    font-size: 0.72rem;
-    font-weight: 600;
-    font-family: var(--font-main);
-    border-radius: 6px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
-}
-
-.btn-save-badge:hover {
-    background: linear-gradient(135deg, #059669, #047857);
-    transform: scale(1.04);
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
-}
-
-.btn-save-badge:active {
-    transform: scale(0.98);
-}
-
-/* Modal Card Largo para Histórico */
-.modal-card-large {
-    max-width: 900px;
-    width: 95%;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-card-large .modal-body {
-    overflow-y: auto;
-    padding: 1.25rem;
-    flex: 1;
-}
-
-/* Barra de Busca do Histórico */
-.historico-search-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
-}
-
-.historico-search-bar input {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 0.65rem 1rem;
-    color: var(--text-value);
-    font-size: 0.9rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.historico-search-bar input:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.2);
-}
-
-.badge-count {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-label);
-    background: rgba(255, 255, 255, 0.06);
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    white-space: nowrap;
-    border: 1px solid var(--border-color);
-}
-
-/* Cards do Histórico */
-.historico-cards-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-}
-
-.historico-card {
-    background: rgba(22, 27, 34, 0.8);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.historico-card:hover {
-    border-color: rgba(47, 129, 247, 0.5);
-    background: rgba(30, 38, 49, 0.9);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-    transform: translateY(-1px);
-}
-
-.historico-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding-bottom: 0.6rem;
-}
-
-.historico-date-title {
-    font-family: var(--font-header);
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #58a6ff;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.historico-date-badge {
-    font-size: 0.75rem;
-    font-family: var(--font-main);
-    color: var(--text-label);
-    background: rgba(255, 255, 255, 0.05);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-}
-
-.historico-card-body {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 0.75rem;
-}
-
-.historico-info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-}
-
-.historico-info-item .label {
-    font-size: 0.68rem;
-    color: var(--text-label);
-    text-transform: uppercase;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.historico-info-item .value {
-    font-size: 0.92rem;
-    color: var(--text-value);
-    font-weight: 600;
-}
-
-.historico-badges-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin-top: 0.2rem;
-}
-
-.badge-pill {
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 0.2rem 0.5rem;
-    border-radius: 6px;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.badge-pill-car {
-    background: rgba(243, 156, 18, 0.15);
-    color: #f39c12;
-    border: 1px solid rgba(243, 156, 18, 0.3);
-}
-
-.badge-pill-line {
-    background: rgba(47, 129, 247, 0.15);
-    color: #58a6ff;
-    border: 1px solid rgba(47, 129, 247, 0.3);
-}
-
-.historico-card-actions {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding-top: 0.6rem;
-}
-
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-family: var(--font-family-mono);
+  line-height: 1;
+}
+
+/* Segmentos individuais — mesmo tamanho proporcional da data */
+.clock-segment {
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #ffffff;          /* Branco */
+  text-shadow: none;
+  min-width: 2ch;
+  text-align: center;
+  line-height: 1;
+  transition: color var(--transition-fast);
+}
+
+/* Segmento de Segundos — branco */
+.clock-segment--seconds {
+  font-size: 1.05rem;
+  color: #ffffff;
+  opacity: 1;
+  align-self: center;
+  padding-bottom: 0;
+  line-height: 1;
+}
+
+/* Separadores ":" — branco */
+.clock-separator {
+  font-size: 1.05rem;
+  color: #ffffff;
+  opacity: 0.8;
+  font-family: var(--font-family-mono);
+  user-select: none;
+  line-height: 1;
+  animation: blink-separator 1s step-end infinite;
+}
+
+/* Container de Ações do Topo: INSERIR, ESCALA e VOLTAR */
+.selected-badge-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: var(--space-3);
+  width: 100%;
+  animation: fade-slide-in 0.3s ease forwards;
+}
+
+.topo-acoes-linha {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+/* Botão Inserir no Topo */
+.btn-inserir-topo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #007aff;
+  color: #ffffff;
+  border: 1px solid #007aff;
+  border-radius: var(--radius-pill);
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: var(--font-family-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 24px;
+  height: 38px;
+  min-height: 38px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 12px rgba(0, 122, 255, 0.35);
+}
+
+.btn-inserir-topo:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  box-shadow: 0 0 16px rgba(0, 122, 255, 0.5);
+}
+
+.btn-inserir-topo:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* Badge ESCALA */
+.selected-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 170, 255, 0.15);
+  border: 1px solid rgba(0, 170, 255, 0.4);
+  color: #00aaff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 22px;
+  height: 38px;
+  min-height: 38px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 0 16px rgba(0, 170, 255, 0.25);
+  box-sizing: border-box;
+}
+
+/* Botão Voltar no Topo */
+.btn-voltar-topo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font-family-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 22px;
+  height: 38px;
+  min-height: 38px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-voltar-topo:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-voltar-topo:active {
+  transform: scale(0.95);
+  background: rgba(255, 59, 48, 0.2);
+  border-color: rgba(255, 59, 48, 0.6);
+  color: #ff5252;
+}
+
+/* Badge de status abaixo do relógio */
+.clock-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+
+  background: rgba(0, 230, 118, 0.08);
+  border: 1px solid rgba(0, 230, 118, 0.2);
+  border-radius: var(--radius-pill);
+}
+
+/* Ponto animado do badge */
+.clock-badge__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+  animation: pulse-dot 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* Texto do badge */
+.clock-badge__text {
+  font-size: var(--font-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-success);
+}
+
+
+/* ============================================================
+   8. CONTAINER DE CARDS — .cards-container
+   Layout principal das seções de conteúdo futuras.
+   ============================================================ */
+.cards-container {
+  /* Flex column para empilhar cards verticalmente (padrão mobile) */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+
+  /* Padding lateral responsivo e largura máxima */
+  width: 100%;
+  max-width: var(--max-width-content);
+  padding: 0 var(--space-5) var(--space-8);
+}
+
+
+/* ============================================================
+   9. CARD BASE — .card
+   Componente visual fundamental do sistema.
+   Design: profundidade, bordas, sombra e cantos suavizados.
+   ============================================================ */
+.card {
+  /* Background elevado com gradiente sutil */
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
+    var(--color-bg-card);
+
+  /* Cantos suavizados — aspecto de app nativo */
+  border-radius: var(--radius-lg);
+
+  /* Borda sutil para definição visual */
+  border: 1px solid var(--color-border-subtle);
+
+  /* Sombra de profundidade com leve brilho azul */
+  box-shadow: var(--shadow-card);
+
+  /* Inset highlight no topo (efeito de luz) */
+  box-shadow:
+    var(--shadow-card),
+    var(--shadow-inset);
+
+  /* Padding interno */
+  padding: var(--space-6);
+
+  /* Transição para hover interativo (quando conteúdo for adicionado) */
+  transition:
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal),
+    background var(--transition-normal);
+
+  /* Posição relativa para pseudo-elementos */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Linha de destaque no topo do card */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-medium), transparent);
+}
+
+/* Card base: altura mínima para ser visível mesmo sem conteúdo */
+.card--base {
+  min-height: 120px;
+}
+
+/* Hover no card — feedback visual */
+.card:hover {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, transparent 60%),
+    var(--color-bg-card-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+/* Grid de Botões dentro do Card */
+.card-buttons-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* Botão de Ação dentro do Card (tamanho exato da palavra) */
 .btn-card-action {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    font-weight: 600;
-    font-family: var(--font-main);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    transition: all 0.15s ease;
+  width: auto;
+  min-width: fit-content;
+  min-height: 42px;
+  background-color: #172b4d;
+  color: #ffffff;
+  border: 1px solid rgba(0, 170, 255, 0.25);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: var(--font-family-ui);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.btn-action-view {
-    background: rgba(47, 129, 247, 0.12);
-    color: #58a6ff;
-    border-color: rgba(47, 129, 247, 0.3);
+.btn-card-action:hover {
+  background-color: #1e3a6a;
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.3);
 }
 
-.btn-action-view:hover {
-    background: rgba(47, 129, 247, 0.25);
-    color: #ffffff;
+.btn-card-action:active {
+  transform: scale(0.98);
+  background-color: var(--color-accent-secondary);
 }
 
-.btn-action-load {
-    background: rgba(16, 185, 129, 0.12);
-    color: #34d399;
-    border-color: rgba(16, 185, 129, 0.3);
+.btn-card-action.is-active {
+  background-color: var(--color-accent-secondary);
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 16px rgba(0, 170, 255, 0.4);
 }
 
-.btn-action-load:hover {
-    background: rgba(16, 185, 129, 0.25);
-    color: #ffffff;
+/* ============================================================
+   10. BARRA DE INSERÇÃO ACIMA DO CARD (MÓDULO ESCALA)
+   ============================================================ */
+.barra-inserir-container {
+  width: 100%;
+  padding: 0 12px;
+  margin-bottom: var(--space-2);
 }
 
-.btn-action-delete {
-    background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
-    border-color: rgba(239, 68, 68, 0.25);
+.card--escala {
+  padding: 12px;
 }
 
-.btn-action-delete:hover {
-    background: rgba(239, 68, 68, 0.25);
-    color: #ffffff;
+/* Card de cada item inserido na escala */
+.item-escala-card {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #ffffff;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 3rem 1.5rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px dashed var(--border-color);
-    border-radius: 12px;
-    margin: 1rem 0;
+/* Linhas dentro do item — espelham o layout do formulário */
+.item-escala-row {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
 }
 
-/* Visão de Detalhes da Folha Histórica */
-.detalhe-nav-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border-color);
-    flex-wrap: wrap;
-    gap: 0.75rem;
+.item-escala-row--top {
+  grid-template-columns: 110px 80px 1fr 28px;
 }
 
-.historico-detalhe-sheet {
-    background: #0d1117;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+.item-escala-row--bottom {
+  grid-template-columns: 80px 1.4fr 85px 1fr;
 }
 
-.sheet-section-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #58a6ff;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
+/* ============================================================
+   10b. MÓDULO LINHAS — Formulário e Itens
+   ============================================================ */
+
+/* Linha do formulário de cadastro de linhas (Nº + Nome + Local Saída) */
+.form-linhas-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
 }
 
-.sheet-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 0.75rem;
-    background: rgba(255, 255, 255, 0.02);
-    padding: 0.85rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+/* Card de cada linha cadastrada */
+.item-linha-card {
+  display: grid;
+  grid-template-columns: 100px 1fr 1fr 28px;
+  gap: 8px;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #ffffff;
+  box-sizing: border-box;
 }
 
-.sheet-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-    margin-top: 0.5rem;
+.dado-escala.col-linha-num-dado {
+  color: #00aaff;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
 }
 
-.sheet-table th, .sheet-table td {
-    padding: 0.45rem 0.6rem;
-    border: 1px solid var(--border-color);
-    text-align: center;
+.dado-escala.col-linha-nome-dado {
+  color: #ffffff;
+  font-weight: 500;
 }
 
-.sheet-table th {
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--text-label);
-    font-weight: 600;
+/* Campo Nº da Linha — forçar caixa alta via CSS */
+.col-linha-num-cadastro,
+.col-linha-num {
+  text-transform: uppercase;
 }
 
-.sheet-table td {
-    color: var(--text-value);
+/* ============================================================
+   10b2. MÓDULO JORNADA — Formulário e Itens
+   ============================================================ */
+
+/* Linha 1 do formulário de jornada (Semana + Data + Hora Pegada) */
+.form-jornada-row--top {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
 }
 
-/* Toast Notifications */
-.toast-container {
+.col-jornada-data {
+  min-width: 90px;
+  max-width: 110px;
+}
+
+.col-jornada-hora {
+  min-width: 100px;
+  max-width: 120px;
+}
+
+/* Linha 2 do formulário de jornada (Matrícula + Motorista) */
+.form-jornada-row--motorista {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.col-jornada-matricula {
+  min-width: 80px;
+  max-width: 120px;
+}
+
+/* Linha de botões de troca rápida (Troca Linha, Troca Carro, Troca linha e Carro) */
+.form-jornada-row--botoes-troca {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.25fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin: 3px 0;
+}
+
+.btn-jornada-troca-direto {
+  min-height: 38px;
+  background: linear-gradient(180deg, #102a45 0%, #081627 100%);
+  color: #00d0ff;
+  border: 1px solid rgba(0, 170, 255, 0.4);
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+  font-weight: 700;
+  font-family: var(--font-family-ui);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6px 8px;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+
+.btn-jornada-troca-direto:hover {
+  background: linear-gradient(180deg, #173b61 0%, #0c213a 100%);
+  border-color: #00e676;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.35);
+}
+
+.btn-jornada-troca-direto:active {
+  transform: scale(0.97);
+  background: #00aaff;
+  color: #000000;
+}
+
+@media (max-width: 380px) {
+  .form-jornada-row--botoes-troca {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+  }
+  .btn-jornada-troca-direto {
+    font-size: 0.72rem;
+    padding: 6px 2px;
+  }
+}
+
+/* Linha 3 do formulário de jornada (Linha + Nome da Linha) */
+.form-jornada-row--middle {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.col-jornada-linha {
+  min-width: 80px;
+  max-width: 120px;
+}
+
+/* Linha 4 do formulário de jornada (Sigla + Nº Carro + Placa) */
+.form-jornada-row--carro {
+  display: grid;
+  grid-template-columns: 80px 100px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.col-jornada-carro-sigla,
+.col-jornada-carro-numero,
+.col-jornada-carro-placa {
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   Inputs do Formulário de Jornada — Padrão Visual Idêntico à Imagem 2
+   (Bordas azul ciano com brilho, fundo navy translúcido e texto cyan para carro)
+   ============================================================ */
+#formInserirJornada .input-escala,
+.form-jornada-row--carro input,
+.form-jornada-row--km input,
+.form-jornada-row--bottom input,
+.carro-anterior-item input,
+.linha-anterior-item input {
+  background-color: rgba(10, 24, 42, 0.85) !important;
+  border: 1px solid rgba(0, 170, 255, 0.5) !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 0 6px rgba(0, 170, 255, 0.08);
+}
+
+#formInserirJornada .input-escala::placeholder,
+.carro-anterior-item input::placeholder {
+  color: #557799 !important;
+}
+
+#formInserirJornada .input-escala:focus,
+.carro-anterior-item input:focus {
+  border-color: #00e5ff !important;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4), inset 0 0 6px rgba(0, 229, 255, 0.15) !important;
+}
+
+/* Destaque no Número do Carro (Ativo e Anteriores — ciano brilhante) */
+#inputJornadaCarroNumero,
+.col-jornada-carro-numero,
+.linha-anterior-item input:first-child,
+.carro-anterior-item input:nth-child(2) {
+  color: #00e5ff !important;
+  font-weight: 700 !important;
+}
+
+/* KM Rodado em verde neon */
+#inputKmPainelRodado,
+#inputKmTacoRodado,
+.col-jornada-km--rodado,
+.carro-anterior-item input.col-jornada-km--rodado {
+  color: #00e676 !important;
+  font-weight: 700 !important;
+}
+
+/* Linhas de KM Painel e KM Tacógrafo (3 colunas proporcionais) */
+.form-jornada-row--km {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.col-jornada-km {
+  font-family: var(--font-family-mono);
+}
+
+.col-jornada-km--rodado {
+  color: #00e676;
+  font-weight: 700;
+}
+
+/* Divisor sutil em destaque (Linha neon ciano com efeito gradiente — Imagem 2) */
+.jornada-divisor-linha {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 170, 255, 0.6) 50%, transparent 100%);
+  box-shadow: 0 0 8px rgba(0, 170, 255, 0.4);
+  margin: 6px 0;
+}
+
+/* Linha 7 do formulário de jornada (Avarias — largura total) */
+.form-jornada-row--bottom {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Card de cada jornada cadastrada */
+.item-jornada-card {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #ffffff;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Linhas dentro do item de jornada */
+.item-jornada-row {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.item-jornada-row--top {
+  grid-template-columns: 1fr auto auto 28px;
+}
+
+.item-jornada-row--motorista {
+  grid-template-columns: 100px 1fr;
+}
+
+.item-jornada-row--middle {
+  grid-template-columns: auto 1fr;
+}
+
+.item-jornada-row--carro {
+  grid-template-columns: 80px 100px 1fr;
+}
+
+.item-jornada-row--km {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.col-jornada-km-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.col-jornada-km-tag {
+  font-size: 0.7rem;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.col-jornada-km-val {
+  font-family: var(--font-family-mono);
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.col-jornada-km-val--rodado {
+  color: #00e676;
+  font-weight: 700;
+}
+
+.item-jornada-row--bottom {
+  grid-template-columns: 1fr;
+}
+
+.col-jornada-carro-sigla-dado {
+  color: #00aaff;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+  text-transform: uppercase;
+}
+
+.col-jornada-carro-numero-dado {
+  color: #ffffff;
+  font-weight: 600;
+  font-family: var(--font-family-mono);
+  text-transform: uppercase;
+}
+
+.col-jornada-carro-placa-dado {
+  color: #00e676;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+  text-transform: uppercase;
+}
+
+.col-jornada-matricula-dado {
+  color: #00aaff;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+}
+
+.col-jornada-motorista-dado {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.col-jornada-semana-dado {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.col-jornada-data-dado {
+  color: #00aaff;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+}
+
+.col-jornada-hora-dado {
+  color: #00e676;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+}
+
+.col-jornada-linha-dado {
+  color: #00aaff;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+}
+
+.col-jornada-linhanome-dado {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.col-jornada-avarias-dado {
+  color: #ffab00;
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* --- Novos Campos de Pontos de Jornada e Viagem --- */
+
+.form-jornada-row--dupla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.form-jornada-row--viagem {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(78px, 1fr));
+  gap: 6px;
+  align-items: stretch;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.form-jornada-row--viagem::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.jornada-ponto-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.btn-jornada-hora {
+  background: linear-gradient(180deg, #162a4a 0%, #0d1b2e 100%);
+  border: 1px solid rgba(0, 170, 255, 0.35);
+  color: #e8f0fe;
+  font-family: var(--font-family-ui);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 38px;
+  line-height: 1.15;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.btn-jornada-hora:hover {
+  background: linear-gradient(180deg, #1e3a6a 0%, #112240 100%);
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.35);
+}
+
+.btn-jornada-hora:active {
+  transform: scale(0.96);
+  background: var(--color-accent-secondary);
+  border-color: var(--color-accent-primary);
+}
+
+/* Botão estático sem ação interativa */
+.btn-jornada-hora--static {
+  cursor: default;
+  background: #112240;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #8baac8;
+  pointer-events: none;
+  font-weight: 700;
+}
+
+/* Botão Roletas — ação para abrir nova sessão */
+.btn-jornada-hora--roleta {
+  cursor: pointer;
+  background: linear-gradient(180deg, #1b3860 0%, #102440 100%);
+  border: 1px solid rgba(0, 170, 255, 0.5);
+  color: #00aaff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn-jornada-hora--roleta:hover {
+  background: linear-gradient(180deg, #234b82 0%, #17355e 100%);
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.5);
+  color: #ffffff;
+}
+
+.btn-jornada-hora--roleta:active {
+  transform: scale(0.96);
+  background: var(--color-accent-secondary);
+}
+
+.badge-add-sessao {
+  background: rgba(0, 170, 255, 0.25);
+  border: 1px solid #00aaff;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  line-height: 1;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Tabela de Viagem e Roletas (Header com Botões + Linhas de Inputs Empilhadas) */
+.jornada-tabela-viagem-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding-bottom: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+.jornada-tabela-viagem-container::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.form-jornada-row--viagem-header {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 3px;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-jornada-row--viagem-header .btn-jornada-hora {
+  font-family: var(--font-family-ui);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: normal;
+  padding: 3px 1px;
+  min-height: 38px;
+  line-height: 1.05;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  text-align: center;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.form-jornada-row--viagem-header .btn-jornada-hora--roleta {
+  gap: 2px;
+}
+
+.form-jornada-row--viagem-header .badge-add-sessao {
+  width: 11px;
+  height: 11px;
+  font-size: 0.58rem;
+  flex-shrink: 0;
+}
+
+.container-linhas-roletas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-jornada-row--viagem-dados {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 3px;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  animation: linhaViagemFadeIn 0.2s ease-out;
+}
+
+@keyframes linhaViagemFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-jornada-row--viagem-dados .input-escala {
+  height: 34px;
+  padding: 4px 1px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* Campo de texto de horário dos pontos */
+.col-jornada-hora-ponto {
+  font-family: var(--font-family-mono);
+  text-align: center;
+  font-size: 0.74rem;
+  letter-spacing: -0.02em;
+  color: #00e676;
+  font-weight: 700;
+  padding: 4px 1px;
+  height: 34px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.col-jornada-hora-ponto::placeholder {
+  color: #556677;
+  text-align: center;
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+}
+
+.col-jornada-hora-ponto[readonly] {
+  cursor: default;
+  user-select: none;
+  background-color: #0b1523;
+  border-color: rgba(0, 170, 255, 0.2);
+}
+
+.col-jornada-hora-ponto[readonly]:focus {
+  border-color: rgba(0, 170, 255, 0.2);
+  box-shadow: none;
+  outline: none;
+}
+
+/* Campo de Carro na tabela de viagem */
+.col-jornada-carro-viagem {
+  font-family: var(--font-family-mono);
+  text-align: center;
+  font-size: 0.70rem;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+  color: #00e676;
+  padding: 4px 1px;
+  height: 34px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #0b1523;
+  border-color: rgba(0, 170, 255, 0.2);
+  cursor: default;
+  user-select: none;
+}
+
+.col-jornada-carro-viagem::placeholder {
+  color: #556677;
+  text-align: center;
+  font-family: var(--font-family-mono);
+}
+
+.col-jornada-carro-viagem:focus {
+  border-color: rgba(0, 170, 255, 0.2);
+  box-shadow: none;
+  outline: none;
+}
+
+/* Campo de Roletas */
+.col-jornada-roletas {
+  font-family: var(--font-family-mono);
+  text-align: center;
+  font-size: 0.76rem;
+  letter-spacing: -0.02em;
+  padding: 4px 1px;
+  height: 34px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.col-jornada-roletas::placeholder {
+  text-align: center;
+}
+
+/* Micro-animação ao carimbar horário automaticamente */
+@keyframes pontoPreenchidoPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 rgba(0, 230, 118, 0.8); }
+  50% { transform: scale(1.03); box-shadow: 0 0 12px rgba(0, 230, 118, 0.6); }
+  100% { transform: scale(1); box-shadow: 0 0 0 rgba(0, 230, 118, 0); }
+}
+
+.input-ponto-animado {
+  animation: pontoPreenchidoPulse 0.4s ease-out;
+  border-color: #00e676 !important;
+}
+
+/* Exibição dos pontos nos cards de jornada */
+.item-jornada-row--dupla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.item-jornada-row--viagem {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(68px, 1fr));
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 3px;
+}
+
+.item-jornada-row--viagem::-webkit-scrollbar {
+  height: 3px;
+}
+
+.item-jornada-row--viagem::-webkit-scrollbar-thumb {
+  background: rgba(0, 170, 255, 0.3);
+  border-radius: 2px;
+}
+
+.item-jornada-ponto-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: center;
+}
+
+.col-jornada-km-val--ponto {
+  color: #00e676;
+  font-family: var(--font-family-mono);
+  font-weight: 600;
+}
+
+/* Seções de Validador e Filipeta Informações */
+.jornada-secao-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.btn-jornada-secao-titulo {
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #00e676;
+  background: linear-gradient(180deg, #0d2238 0%, #081525 100%);
+  border: 1px solid rgba(0, 230, 118, 0.35);
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.12);
+  min-height: 32px;
+  cursor: default;
+  pointer-events: none;
+}
+
+.container-secao-linhas-multi {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.secao-filipeta-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.secao-filipeta-scroll-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.form-jornada-row--roletas-total,
+.item-jornada-row--roletas-total {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.form-jornada-row--validador {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.form-jornada-row--filipeta {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(56px, 1fr));
+  gap: 6px;
+  width: 100%;
+  min-width: 440px;
+}
+
+.jornada-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.btn-jornada-rotulo {
+  cursor: default;
+  pointer-events: none;
+  background: #112240;
+  border: 1px solid rgba(0, 170, 255, 0.25);
+  color: #a0c4e8;
+  font-weight: 700;
+  font-size: 0.74rem;
+  padding: 4px 2px;
+  min-height: 32px;
+  border-radius: 5px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: normal;
+  line-height: 1.15;
+}
+
+.input-jornada-info {
+  font-family: var(--font-family-mono);
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 6px 4px;
+  height: 36px;
+  color: #ffffff;
+}
+
+/* Exibição de Roletas Totais, Validador e Filipeta nos cards de jornada */
+.item-jornada-row--roletas-total {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.item-jornada-row--validador {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.item-jornada-row--filipeta {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(56px, 1fr));
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.item-jornada-row--filipeta::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* ============================================================
+   10b-2. MÓDULO JORNADA — Troca de Linha/Carro & Etapas
+   ============================================================ */
+
+/* Barra de Ação de Troca no Formulário */
+.jornada-troca-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 4px 0;
+}
+
+.btn-jornada-troca {
+  width: 100%;
+  min-height: 38px;
+  background: linear-gradient(135deg, #0d2238 0%, #061528 100%);
+  border: 1px solid rgba(0, 170, 255, 0.45);
+  color: #00d0ff;
+  font-family: var(--font-family-ui);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0, 170, 255, 0.15);
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-jornada-troca:hover {
+  background: linear-gradient(135deg, #133355 0%, #091f3a 100%);
+  border-color: #00e676;
+  color: #00e676;
+  box-shadow: 0 0 12px rgba(0, 230, 118, 0.3);
+}
+
+.btn-jornada-troca:active {
+  transform: scale(0.98);
+}
+
+.jornada-etapa-indicador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 4px 8px;
+  background: rgba(0, 170, 255, 0.08);
+  border: 1px dashed rgba(0, 170, 255, 0.3);
+  border-radius: 5px;
+  font-size: 0.72rem;
+  box-sizing: border-box;
+}
+
+.badge-etapa-ativa {
+  color: #00e676;
+  font-weight: 700;
+}
+
+.badge-etapas-count {
+  color: #8baac8;
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+}
+
+/* Painel de Etapas Salvas Durante a Jornada (Ao Vivo no Formulário) */
+.painel-etapas-andamento {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+}
+
+.card-etapa-salva {
+  background: rgba(4, 15, 28, 0.9);
+  border: 1px solid rgba(0, 170, 255, 0.4);
+  border-radius: 6px;
+  padding: 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* Modal de Troca de Linha / Carro (Popup 100% visível, centralizado e sem necessidade de scroll) */
+.modal-troca-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  padding: 12px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.modal-troca-card {
+  background: #091524;
+  border: 1px solid rgba(0, 170, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 170, 255, 0.25);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: auto;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: modalTrocaFadeIn 0.2s ease-out;
+}
+
+/* Bloco do Carro Anterior Mantido Abaixo com os Mesmos Campos da Imagem 2 */
+.bloco-carro-anterior-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@keyframes modalTrocaFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-troca-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0, 170, 255, 0.2);
+  padding-bottom: 8px;
+}
+
+.modal-troca-titulo {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.btn-modal-fechar {
+  background: transparent;
+  border: none;
+  color: #8baac8;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.btn-modal-fechar:hover {
+  color: #ff5252;
+}
+
+.modal-troca-sub {
+  color: #a0c4e8;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+/* Tabs do Modal */
+.modal-troca-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.tab-troca-btn {
+  background: #0d1e32;
+  border: 1px solid rgba(0, 170, 255, 0.25);
+  color: #8baac8;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 8px 2px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.tab-troca-btn--active {
+  background: linear-gradient(180deg, #173d6b 0%, #0d284a 100%);
+  border-color: #00aaff;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.35);
+}
+
+.modal-troca-painel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-troca-desc {
+  font-size: 0.74rem;
+  color: #b0cbe8;
+  line-height: 1.2;
+}
+
+.modal-troca-desc strong {
+  color: #00e676;
+}
+
+.modal-troca-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.modal-troca-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.modal-troca-label {
+  font-size: 0.72rem;
+  color: #8baac8;
+  font-weight: 600;
+}
+
+.input-troca-field {
+  width: 100%;
+  height: 36px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  font-size: 0.85rem;
+}
+
+.modal-troca-feedback {
+  font-size: 0.72rem;
+  color: #00e676;
+  min-height: 14px;
+  font-family: var(--font-family-mono);
+}
+
+.modal-troca-acoes {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-modal-acao {
+  min-height: 38px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.btn-modal-confirmar {
+  background: linear-gradient(135deg, #0088cc 0%, #005588 100%);
+  border: 1px solid #00aaff;
+  color: #ffffff;
+}
+
+.btn-modal-confirmar:hover {
+  background: linear-gradient(135deg, #00aaee 0%, #0077bb 100%);
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.4);
+}
+
+.btn-modal-cancelar {
+  background: #112240;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #8baac8;
+}
+
+.btn-modal-cancelar:hover {
+  background: #1b3560;
+  color: #ffffff;
+}
+
+/* Card de Histórico com Múltiplas Etapas (Ordem Decrescente) */
+.item-jornada-etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 8px;
+  border: 1px solid rgba(0, 170, 255, 0.15);
+}
+
+.badge-etapa-header {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.badge-etapa-header--recente {
+  background: linear-gradient(90deg, rgba(0, 170, 255, 0.25) 0%, rgba(0, 170, 255, 0.05) 100%);
+  border-left: 3px solid #00aaff;
+  color: #00d0ff;
+}
+
+.badge-etapa-header--inicio {
+  background: linear-gradient(90deg, rgba(0, 230, 118, 0.2) 0%, rgba(0, 230, 118, 0.05) 100%);
+  border-left: 3px solid #00e676;
+  color: #00e676;
+}
+
+/* ============================================================
+   10c. MÓDULO MOTORISTAS — Formulário e Itens
+   ============================================================ */
+
+/* Linha do formulário de cadastro de motoristas (Matrícula + Nome) */
+.form-motoristas-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Card de cada motorista cadastrado */
+.item-motorista-card {
+  display: grid;
+  grid-template-columns: 100px 1fr 28px;
+  gap: 8px;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+.dado-escala.col-mot-matricula-dado {
+  color: #00aaff;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+}
+
+.dado-escala.col-mot-nome-dado {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* ============================================================
+   10d. MÓDULO CARROS — Formulário e Itens
+   ============================================================ */
+
+/* Linha do formulário de cadastro de carros (Sigla + Nº Carro + Placa) */
+.form-carros-row {
+  display: grid;
+  grid-template-columns: 80px 100px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Card de cada carro cadastrado */
+.item-carro-card {
+  display: grid;
+  grid-template-columns: 80px 100px 1fr 28px;
+  gap: 8px;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+.dado-escala.col-carro-sigla-dado {
+  color: #00aaff;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+  text-transform: uppercase;
+}
+
+.dado-escala.col-carro-numero-dado {
+  color: #ffffff;
+  font-weight: 600;
+  font-family: var(--font-family-mono);
+}
+
+.dado-escala.col-carro-placa-dado {
+  color: #00e676;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+  text-transform: uppercase;
+}
+
+.col-carro-sigla,
+.col-carro-numero,
+.col-carro-placa {
+  text-transform: uppercase;
+}
+
+.dado-escala.col-carro-numero-dado {
+  text-transform: uppercase;
+}
+
+/* Wrapper do Formulário: empilha as duas linhas */
+.form-escala-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+}
+
+/* Linha 1 (Data, Linha, Nome da Linha) */
+.form-escala-row--top {
+  display: grid;
+  grid-template-columns: 110px 80px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Linha 2 (Horário, Local Saída, Matrícula, Motorista) */
+.form-escala-row--bottom {
+  display: grid;
+  grid-template-columns: 80px 1.4fr 85px 1fr;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.input-escala {
+  background-color: #121212;
+  border: 1px solid #333333;
+  color: #ffffff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: var(--font-family-ui);
+  text-align: left;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-escala::placeholder {
+  color: #777777;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.input-escala:focus {
+  border-color: #007aff;
+  box-shadow: 0 0 8px rgba(0, 122, 255, 0.3);
+}
+
+/* Lista de Escala dentro do Card */
+.lista-escala-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Dados da Escala — Alinhados à Esquerda */
+.dado-escala {
+  padding: 2px 4px;
+  font-size: 0.92rem;
+  color: #ffffff;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.dado-escala.col-data {
+  color: #8baac8;
+  font-family: var(--font-family-mono);
+}
+
+.dado-escala.col-hora {
+  color: #00aaff;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+}
+
+.dado-escala.col-local {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.dado-escala.col-mat {
+  color: #ffffff;
+  font-family: var(--font-family-mono);
+}
+
+.dado-escala.col-motorista {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.btn-excluir-item {
+  background: none;
+  border: none;
+  color: #ff5252;
+  cursor: pointer;
+  font-size: 0.95rem;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  padding: 0;
+}
+
+.btn-excluir-item:hover {
+  background-color: rgba(255, 82, 82, 0.15);
+}
+
+
+/* ============================================================
+   10. RODAPÉ — .app-footer
+   ============================================================ */
+.app-footer {
+  width: 100%;
+  max-width: var(--max-width-content);
+  padding: var(--space-4) var(--space-6);
+  text-align: center;
+  border-top: 1px solid var(--color-border-subtle);
+  margin-top: auto; /* Empurra o rodapé para o final da página */
+}
+
+.app-footer__text {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+}
+
+.app-footer__version {
+  color: var(--color-accent-secondary);
+  font-family: var(--font-family-mono);
+}
+
+
+/* ============================================================
+   11. ANIMAÇÕES GLOBAIS
+   ============================================================ */
+
+/* Pulso suave para o logo */
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(0, 170, 255, 0.4)); }
+  50%       { filter: drop-shadow(0 0 18px rgba(0, 170, 255, 0.8)); }
+}
+
+/* Piscar dos separadores do relógio */
+@keyframes blink-separator {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.1; }
+}
+
+/* Pulso do ponto de status */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 6px var(--color-success); }
+  50%      { opacity: 0.5; box-shadow: 0 0 12px var(--color-success); }
+}
+
+/* Entrada suave dos elementos (fade-in + slide-up) */
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Aplica entrada suave aos elementos principais */
+.app-header,
+.clock-section,
+.cards-container {
+  animation: fade-slide-in 0.6s ease both;
+}
+
+.app-header   { animation-delay: 0s;    }
+.clock-section { animation-delay: 0.15s; }
+.cards-container { animation-delay: 0.3s; }
+
+
+/* ============================================================
+   12. RESPONSIVIDADE POR HARDWARE — CLASSES INJETADAS PELO JS
+   O JavaScript detecta o tipo de dispositivo e injeta as classes:
+     - body.device-smartphone → layout Portrait bloqueado
+     - body.device-tablet     → layout Landscape otimizado
+   ============================================================ */
+
+/* -------------------------------------------------------
+   12.1 SMARTPHONE — Layout retrato, coluna única, tamanhos
+        adaptados para uso com uma mão.
+   ------------------------------------------------------- */
+body.device-smartphone {
+  /* Garante layout vertical em dispositivos smartphone */
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+/* Título menor para caber na tela pequena */
+body.device-smartphone .app-title {
+  font-size: var(--font-3xl);
+}
+
+/* Header com padding reduzido */
+body.device-smartphone .app-header {
+  padding: var(--space-6) var(--space-4) var(--space-5);
+}
+
+/* Relógio ligeiramente menor para smartphones */
+body.device-smartphone .clock-segment {
+  font-size: 3.5rem;
+}
+
+body.device-smartphone .clock-segment--seconds {
+  font-size: 1.2rem;
+}
+
+/* Clock container no smartphone: sem card, sem padding */
+body.device-smartphone .clock-container {
+  padding: 0;
+  margin-top: var(--space-2);
+}
+
+/* Cards com padding reduzido em smartphones */
+body.device-smartphone .card {
+  padding: var(--space-5);
+}
+
+/* Bloqueio visual de orientação Landscape em smartphones:
+   Exibe overlay de aviso se o usuário girar o telefone.
+   O overlay é criado via CSS puro usando um pseudo-elemento no body. */
+@media (orientation: landscape) {
+  body.device-smartphone::after {
+    content: '🔄  Por favor, mantenha o celular na vertical';
     position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    z-index: 999999;
+    inset: 0;
+    z-index: 9999;
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    pointer-events: none;
-}
-
-.toast-message {
-    pointer-events: auto;
-    background: #161b22;
-    color: #ffffff;
-    border: 1px solid var(--border-color);
-    border-left: 4px solid var(--accent-blue);
-    padding: 0.9rem 1.25rem;
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    font-size: 0.9rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1), fadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) 3.7s forwards;
-}
-
-.toast-message.toast-success {
-    border-left-color: #238636;
-}
-
-.toast-message.toast-error {
-    border-left-color: #da3633;
-}
-
-.toast-message.toast-warning {
-    border-left-color: #f39c12;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes fadeOut {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(50%);
-    }
-}
-
-@media (max-width: 600px) {
-    .toast-container {
-        left: 1rem;
-        right: 1rem;
-        bottom: 1rem;
-    }
-    .toast-message {
-        width: 100%;
-    }
-    .historico-card-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .historico-card-actions {
-        width: 100%;
-        justify-content: stretch;
-    }
-    .btn-card-action {
-        flex: 1;
-        justify-content: center;
-    }
-}
-
-/* ==========================================================================
-   Controle de Jornada & Horas Extras (Carga 7h)
-   ========================================================================== */
-.jornada-card {
-    background: linear-gradient(145deg, rgba(22, 27, 34, 0.95), rgba(13, 17, 23, 0.9));
-    border: 1px solid rgba(47, 129, 247, 0.25);
-    border-radius: 12px;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-}
-
-.jornada-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 0.8rem;
-    margin-bottom: 1.2rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.badge-carga {
-    background: rgba(47, 129, 247, 0.15);
-    color: #58a6ff;
-    border: 1px solid rgba(47, 129, 247, 0.35);
-    padding: 0.35rem 0.85rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.badge-carga strong {
-    color: #ffffff;
-    font-size: 0.9rem;
-}
-
-.jornada-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1.25fr;
-    gap: 1.25rem;
-}
-
-.jornada-column {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    background: rgba(255, 255, 255, 0.02);
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.jornada-col-title {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #58a6ff;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding-bottom: 0.4rem;
-    margin-bottom: 0.2rem;
-}
-
-.jornada-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.jornada-field label {
-    font-size: 0.72rem;
-    color: var(--text-label);
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.btn-stamp-micro {
-    background: rgba(47, 129, 247, 0.15);
-    color: #58a6ff;
-    border: 1px solid rgba(47, 129, 247, 0.3);
-    padding: 0.15rem 0.45rem;
-    border-radius: 4px;
-    font-size: 0.68rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.btn-stamp-micro:hover {
-    background: rgba(47, 129, 247, 0.3);
-    color: #ffffff;
-    transform: translateY(-1px);
-}
-
-.jornada-subinfo {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.25);
-    padding: 0.45rem 0.75rem;
-    border-radius: 6px;
-    margin-top: auto;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.subinfo-label {
-    font-size: 0.72rem;
-    color: var(--text-label);
-}
-
-.subinfo-val {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--accent-blue);
-    font-family: var(--font-header);
-}
-
-.jornada-col-results {
-    background: linear-gradient(145deg, rgba(35, 134, 54, 0.08), rgba(47, 129, 247, 0.05));
-    border-color: rgba(47, 129, 247, 0.2);
-}
-
-.he-result-box {
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(243, 156, 18, 0.25);
-    border-radius: 8px;
-    padding: 0.75rem 0.9rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-}
-
-.he-result-prestacao {
-    border-color: rgba(35, 134, 54, 0.4);
-    background: rgba(35, 134, 54, 0.08);
-}
-
-.he-result-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.he-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: var(--text-label);
-    letter-spacing: 0.3px;
-}
-
-.he-value {
-    font-family: var(--font-header);
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #f59e0b;
-    text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
-}
-
-.he-result-prestacao .he-value {
-    color: #4ade80;
-    text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
-}
-
-.he-duration-sub {
-    font-size: 0.72rem;
-    color: var(--text-label);
-}
-
-.he-duration-sub strong {
-    color: var(--text-value);
-}
-
-.auto-locked-field {
-    background: rgba(0, 0, 0, 0.3) !important;
-    border-color: rgba(255, 255, 255, 0.08) !important;
-    cursor: not-allowed !important;
-    user-select: none !important;
-    -webkit-user-select: none !important;
-    pointer-events: none;
-}
-
-/* ==========================================================================
-   Painel de Carimbos Rápidos de Horário
-   ========================================================================== */
-.stamp-control-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    background: linear-gradient(145deg, rgba(22, 27, 34, 0.95), rgba(13, 17, 23, 0.9));
-    border: 1px solid rgba(47, 129, 247, 0.25);
-    border-radius: 10px;
-    padding: 0.85rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.stamp-row {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.stamp-row-top {
-    justify-content: stretch;
-}
-
-.stamp-row-middle,
-.stamp-row-bottom {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 0.5rem;
-}
-
-.btn-stamp-action {
-    background: rgba(47, 129, 247, 0.12);
-    color: #58a6ff;
-    border: 1px solid rgba(47, 129, 247, 0.3);
-    border-radius: 6px;
-    padding: 0.5rem 0.6rem;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    background: var(--color-bg-deep);
+    color: var(--color-text-primary);
+    font-family: var(--font-family-ui);
+    font-size: var(--font-lg);
+    font-weight: 600;
     text-align: center;
-    white-space: nowrap;
+    padding: var(--space-8);
+    letter-spacing: 0.04em;
+  }
 }
 
-.btn-stamp-action:hover {
-    background: rgba(47, 129, 247, 0.28);
-    color: #ffffff;
-    border-color: #58a6ff;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(47, 129, 247, 0.3);
+/* -------------------------------------------------------
+   12.2 TABLET — Layout paisagem, múltiplas colunas,
+        elementos maiores para visualização à distância.
+   ------------------------------------------------------- */
+body.device-tablet .app-header {
+  /* Mantém coluna centralizada (relógio está dentro do header) */
+  padding: var(--space-8) var(--space-10) var(--space-10);
+  max-width: 900px;
+  text-align: center;
 }
 
-.btn-stamp-action:active {
-    transform: translateY(0);
+/* Agrupa título e subtítulo verticalmente no layout horizontal */
+body.device-tablet .app-title {
+  font-size: var(--font-5xl);
 }
 
-.btn-stamp-pegada {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(29, 78, 216, 0.35));
-    border-color: rgba(37, 99, 235, 0.5);
-    color: #93c5fd;
-    flex: 1;
-    min-width: 140px;
+/* Max-width maior para aproveitar espaço lateral */
+body.device-tablet .clock-container,
+body.device-tablet .cards-container {
+  max-width: 900px;
 }
 
-.btn-stamp-pegada:hover {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: #ffffff;
+/* Layout de cards em duas colunas em tablets */
+body.device-tablet .cards-container {
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
-.btn-stamp-placa {
-    background: rgba(243, 156, 18, 0.15);
-    border-color: rgba(243, 156, 18, 0.4);
-    color: #fbbf24;
+body.device-tablet .card {
+  flex: 1 1 calc(50% - var(--space-5));
+  min-width: 280px;
 }
 
-.btn-stamp-placa:hover {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #ffffff;
+/* Relógio ligeiramente maior em tablets — mantido compacto */
+body.device-tablet .clock-segment {
+  font-size: 2.4rem;
 }
 
-@media (max-width: 768px) {
-    .stamp-row-middle,
-    .stamp-row-bottom {
-        grid-template-columns: repeat(2, 1fr);
-    }
+body.device-tablet .clock-segment--seconds {
+  font-size: 1.6rem;
+}
+
+/* Clock container no tablet: sem card, sem padding */
+body.device-tablet .clock-container {
+  padding: 0;
+}
+
+/* Em tablets em Portrait, volta ao layout de coluna */
+@media (orientation: portrait) {
+  body.device-tablet .app-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  body.device-tablet .cards-container {
+    flex-direction: column;
+  }
+
+  body.device-tablet .card {
+    flex: none;
+    width: 100%;
+  }
 }
 
 
+/* ============================================================
+   13. RESPONSIVIDADE GERAL (sem classes de dispositivo)
+   Fallback responsivo para casos onde o JS não executou.
+   ============================================================ */
+@media (max-width: 480px) {
+  .app-title {
+    font-size: var(--font-3xl);
+  }
+
+  .clock-segment {
+    font-size: 1.8rem;
+  }
+
+  .clock-segment--seconds {
+    font-size: 1.2rem;
+  }
+
+  .clock-container {
+    padding: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  .cards-container {
+    padding: 0 var(--space-4) var(--space-6);
+  }
+
+  .card--escala {
+    padding: 10px 6px;
+  }
+
+  .form-jornada-row--viagem-header .btn-jornada-hora {
+    font-size: 0.55rem;
+    padding: 3px 1px;
+    min-height: 38px;
+    line-height: 1.05;
+  }
+
+  .form-jornada-row--viagem-dados .col-jornada-carro-viagem {
+    font-size: 0.68rem;
+    letter-spacing: -0.04em;
+    padding: 3px 1px;
+  }
+
+  .form-jornada-row--viagem-dados .col-jornada-roletas {
+    font-size: 0.74rem;
+    padding: 3px 1px;
+  }
+
+  .form-jornada-row--viagem-dados .col-jornada-hora-ponto {
+    font-size: 0.72rem;
+    padding: 3px 1px;
+  }
+}
+
+@media (min-width: 600px) {
+  .form-jornada-row--viagem-header {
+    gap: 6px;
+  }
+  .form-jornada-row--viagem-dados {
+    gap: 6px;
+  }
+  .form-jornada-row--viagem-header .btn-jornada-hora {
+    font-size: 0.75rem;
+    padding: 6px 3px;
+    min-height: 40px;
+    line-height: 1.15;
+  }
+  .form-jornada-row--viagem-dados .col-jornada-carro-viagem {
+    font-size: 0.88rem;
+    letter-spacing: normal;
+    padding: 6px 4px;
+    height: 36px;
+  }
+  .form-jornada-row--viagem-dados .col-jornada-roletas {
+    font-size: 0.90rem;
+    padding: 6px 4px;
+    height: 36px;
+  }
+  .form-jornada-row--viagem-dados .col-jornada-hora-ponto {
+    font-size: 0.90rem;
+    padding: 6px 4px;
+    height: 36px;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-title {
+    font-size: var(--font-5xl);
+  }
+}
 
 
+/* ============================================================
+   14. ACESSIBILIDADE — FOCO VISÍVEL
+   Garante que usuários de teclado/switch possam navegar.
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* Remove outline padrão apenas para navegação por mouse */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+
+/* ============================================================
+   15. PREFERÊNCIA DE REDUÇÃO DE MOVIMENTO
+   Respeita usuários com epilepsia ou sensibilidade a animações.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <!--
+    ============================================================
+    CONTROLE DO MOTORISTA — Sistema Profissional de Gestão
+    Arquivo: linhas.html (Módulo de Linhas)
+    Descrição: Cadastro de linhas (número + nome) para uso
+               compartilhado em todos os módulos do sistema.
+    Arquitetura: Jamstack / GitHub Pages (100% estático)
+    ============================================================
+  -->
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <meta name="description" content="Módulo de Linhas — Controle do Motorista. Auto Viação Reginas." />
+  <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Linhas Motorista" />
+
+  <title>Controle do Motorista — Linhas</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ============================================================
+       CABEÇALHO PRINCIPAL — Identidade, Data/Hora e Navegação
+       ============================================================ -->
+  <header class="app-header" role="banner">
+
+    <!-- Título Principal -->
+    <h1 class="app-title">Controle do Motorista</h1>
+
+    <!-- Subtítulo: branco, centralizado -->
+    <p class="app-subtitle">Sistema Profissional de Gestão</p>
+
+    <!-- Linha de Informações: Data e Hora Lado a Lado -->
+    <div class="datetime-container">
+      <span class="app-date" id="dataAtual" aria-label="Data atual">--</span>
+      <span class="datetime-separator" aria-hidden="true">•</span>
+      <div class="clock-container" id="clockContainer" role="timer" aria-live="off" aria-label="Relógio do sistema anti-fraude">
+        <div class="clock-display" id="clockDisplay" aria-label="Horário atual">
+          <span class="clock-segment" id="clockHours">--</span>
+          <span class="clock-separator" aria-hidden="true">:</span>
+          <span class="clock-segment" id="clockMinutes">--</span>
+          <span class="clock-separator" aria-hidden="true">:</span>
+          <span class="clock-segment clock-segment--seconds" id="clockSeconds">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações e Destaque do Topo: INSERIR, LINHAS e VOLTAR -->
+    <div class="selected-badge-container" id="selectedBadgeContainer" aria-live="polite">
+      <div class="topo-acoes-linha">
+        <button type="submit" form="formInserirLinha" class="btn-inserir-topo" id="btnInserirLinha" aria-label="Inserir linha">
+          INSERIR
+        </button>
+        <span class="selected-badge" id="selectedBadge">LINHAS</span>
+        <a href="index.html" class="btn-voltar-topo" id="btnVoltarTopo" aria-label="Voltar para a tela inicial">
+          VOLTAR
+        </a>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- ============================================================
+       SEÇÃO DE CARDS — Módulo de Linhas
+       ============================================================ -->
+  <main class="cards-container" id="cardsContainer" role="main">
+
+    <!-- Barra de Campos: Número da Linha e Nome da Linha -->
+    <section class="barra-inserir-container" aria-label="Campos de cadastro de linhas">
+      <form id="formInserirLinha" class="form-escala-wrapper">
+        <div class="form-escala-row form-linhas-row">
+          <input type="text" id="inputLinhaNumCadastro" class="input-escala col-linha-num-cadastro" placeholder="Nº da Linha" required />
+          <input type="text" id="inputLinhaNomeCadastro" class="input-escala col-linha-nome-cadastro" placeholder="Nome da Linha" required />
+          <input type="text" id="inputLinhaLocalCadastro" class="input-escala col-linha-local-cadastro" placeholder="Local Saída" required />
+        </div>
+      </form>
+    </section>
+
+    <!-- CARD BASE — Onde as linhas cadastradas serão exibidas -->
+    <article class="card card--base card--escala" id="cardBase" aria-label="Módulo de Linhas">
+      <div id="listaLinhasContainer" class="lista-escala-container">
+        <!-- Itens inseridos aparecem aqui -->
+      </div>
+    </article>
+
+  </main>
+
+  <!-- ============================================================
+       RODAPÉ DA APLICAÇÃO
+       ============================================================ -->
+  <footer class="app-footer" role="contentinfo">
+    <p class="app-footer__text">
+      &copy; <span id="footerYear"></span> Auto Viação Reginas —
+      <span class="app-footer__version">v2.0.0</span>
+    </p>
+  </footer>
+
+  <!-- ============================================================
+       IMPORTAÇÃO DOS SCRIPTS MODULARES
+       ============================================================ -->
+  <script src="versao.js" defer></script>
+  <script src="relogio.js" defer></script>
+  <script src="script.js" defer></script>
+
+</body>
+
+</html>

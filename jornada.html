@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <!--
+    ============================================================
+    CONTROLE DO MOTORISTA — Sistema Profissional de Gestão
+    Arquivo: jornada.html (Módulo de Controle de Jornada)
+    Descrição: Página dedicada ao controle de jornada do motorista.
+    Arquitetura: Jamstack / GitHub Pages (100% estático)
+    ============================================================
+  -->
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <meta name="description" content="Módulo de Controle de Jornada — Controle do Motorista. Auto Viação Reginas." />
+  <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Controle Jornada" />
+
+  <title>Controle do Motorista — Controle Jornada</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ============================================================
+       CABEÇALHO PRINCIPAL — Identidade, Data/Hora e Navegação
+       ============================================================ -->
+  <header class="app-header" role="banner">
+
+    <!-- Título Principal -->
+    <h1 class="app-title">Controle do Motorista</h1>
+
+    <!-- Subtítulo: branco, centralizado -->
+    <p class="app-subtitle">Sistema Profissional de Gestão</p>
+
+    <!-- Linha de Informações: Data e Hora Lado a Lado -->
+    <div class="datetime-container">
+      <span class="app-date" id="dataAtual" aria-label="Data atual">--</span>
+      <span class="datetime-separator" aria-hidden="true">•</span>
+      <div class="clock-container" id="clockContainer" role="timer" aria-live="off" aria-label="Relógio do sistema anti-fraude">
+        <div class="clock-display" id="clockDisplay" aria-label="Horário atual">
+          <span class="clock-segment" id="clockHours">--</span>
+          <span class="clock-separator" aria-hidden="true">:</span>
+          <span class="clock-segment" id="clockMinutes">--</span>
+          <span class="clock-separator" aria-hidden="true">:</span>
+          <span class="clock-segment clock-segment--seconds" id="clockSeconds">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações e Destaque do Topo: INSERIR, CONTROLE JORNADA e VOLTAR -->
+    <div class="selected-badge-container" id="selectedBadgeContainer" aria-live="polite">
+      <div class="topo-acoes-linha">
+        <button type="submit" form="formInserirJornada" class="btn-inserir-topo" id="btnInserirJornada" aria-label="Inserir dados na jornada">
+          INSERIR
+        </button>
+        <span class="selected-badge" id="selectedBadge">CONTROLE JORNADA</span>
+        <a href="index.html" class="btn-voltar-topo" id="btnVoltarTopo" aria-label="Voltar para a tela inicial">
+          VOLTAR
+        </a>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- ============================================================
+       SEÇÃO DE CARDS — Módulo de Controle de Jornada
+       ============================================================ -->
+  <main class="cards-container" id="cardsContainer" role="main">
+
+    <!-- Barra de Campos Acima do Card (Semana, Data, Hora Pegada, Linha, Nome da Linha, Avarias) -->
+    <section class="barra-inserir-container" aria-label="Campos de inserção da jornada">
+      <form id="formInserirJornada" class="form-escala-wrapper">
+        <!-- Linha 1: Semana, Data, Hora Pegada -->
+        <div class="form-escala-row form-jornada-row--top">
+          <input type="text" id="inputSemana" class="input-escala col-jornada-semana" placeholder="Semana" readonly />
+          <input type="text" id="inputDataJornada" class="input-escala col-jornada-data" placeholder="Data" maxlength="10" required />
+          <input type="text" id="inputHoraPegada" class="input-escala col-jornada-hora" placeholder="Hora Pegada" readonly />
+        </div>
+        <!-- Linha 2: Matrícula, Motorista -->
+        <div class="form-escala-row form-jornada-row--motorista">
+          <input type="text" id="inputJornadaMatricula" class="input-escala col-jornada-matricula" placeholder="Matrícula" readonly />
+          <input type="text" id="inputJornadaMotorista" class="input-escala col-jornada-motorista" placeholder="Motorista" readonly />
+        </div>
+        <!-- Botões de Troca: Troca Linha, Troca Carro, Troca linha e Carro -->
+        <div class="form-jornada-row--botoes-troca">
+          <button type="button" class="btn-jornada-troca-direto" id="btnTrocaLinhaDireto">Troca Linha</button>
+          <button type="button" class="btn-jornada-troca-direto" id="btnTrocaCarroDireto">Troca Carro</button>
+          <button type="button" class="btn-jornada-troca-direto" id="btnTrocaAmbosDireto">Troca linha e Carro</button>
+        </div>
+        <!-- Linha 3: Linha, Nome da Linha (mantém linhas anteriores abaixo em caso de troca) -->
+        <div id="containerJornadaLinhas" class="container-jornada-linhas" style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+          <div class="form-escala-row form-jornada-row--middle">
+            <input type="text" id="inputJornadaLinha" class="input-escala col-jornada-linha" placeholder="Linha" readonly />
+            <input type="text" id="inputJornadaLinhaNome" class="input-escala col-jornada-linha-nome" placeholder="Nome da Linha" readonly />
+          </div>
+          <div id="listaLinhasAnteriores" class="lista-linhas-anteriores" style="display: flex; flex-direction: column; gap: 6px; width: 100%;"></div>
+        </div>
+        <!-- Linha Divisória de Destaque -->
+        <div class="jornada-divisor-linha" aria-hidden="true"></div>
+        <!-- Seção do Carro: Sigla, N° Carro, Placa, KMs e Avarias (Novo carro lançado acima; anterior mantido abaixo) -->
+        <div id="secaoJornadaCarros" class="secao-jornada-carros" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+          <!-- Bloco do Carro Ativo (Sempre Acima / no Topo) -->
+          <div id="blocoCarroAtivo" class="bloco-carro-ativo" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+            <!-- Linha 4: Sigla, N° Carro, Placa Carro -->
+            <div class="form-escala-row form-jornada-row--carro">
+              <input type="text" id="inputJornadaCarroSigla" class="input-escala col-jornada-carro-sigla" placeholder="Sigla" readonly />
+              <input type="text" id="inputJornadaCarroNumero" class="input-escala col-jornada-carro-numero" placeholder="N° Carro" maxlength="15" />
+              <input type="text" id="inputJornadaCarroPlaca" class="input-escala col-jornada-carro-placa" placeholder="Placa Carro" readonly />
+            </div>
+            <!-- Linha 5: KM Painel (Inicial, Final, Rodado) -->
+            <div class="form-escala-row form-jornada-row--km">
+              <input type="text" id="inputKmPainelInicial" class="input-escala col-jornada-km" placeholder="KM Painel Inicial" inputmode="numeric" />
+              <input type="text" id="inputKmPainelFinal" class="input-escala col-jornada-km" placeholder="KM Painel Final" inputmode="numeric" />
+              <input type="text" id="inputKmPainelRodado" class="input-escala col-jornada-km col-jornada-km--rodado" placeholder="KM Painel Rodado" readonly />
+            </div>
+            <!-- Linha 6: KM Tacógrafo (Inicial, Final, Rodado) -->
+            <div class="form-escala-row form-jornada-row--km">
+              <input type="text" id="inputKmTacoInicial" class="input-escala col-jornada-km" placeholder="KM Tacógrafo Inicial" inputmode="numeric" />
+              <input type="text" id="inputKmTacoFinal" class="input-escala col-jornada-km" placeholder="KM Tacógrafo Final" inputmode="numeric" />
+              <input type="text" id="inputKmTacoRodado" class="input-escala col-jornada-km col-jornada-km--rodado" placeholder="KM Tacógrafo Rodado" readonly />
+            </div>
+            <!-- Linha 7: Avarias -->
+            <div class="form-escala-row form-jornada-row--bottom">
+              <input type="text" id="inputAvarias" class="input-escala col-jornada-avarias" placeholder="Avarias" />
+            </div>
+          </div>
+
+          <!-- Campos do Carro Anterior (Exibidos abaixo dos novos campos do novo carro) -->
+          <div id="listaCarrosAnteriores" class="lista-carros-anteriores" style="display: flex; flex-direction: column; gap: 14px; width: 100%; margin-top: 14px;"></div>
+        </div>
+
+        <!-- Linha Divisória de Destaque Abaixo de Avarias / Seção de Carros -->
+        <div class="jornada-divisor-linha" aria-hidden="true"></div>
+
+        <!-- Seção de Ação: Troca de Linha / Carro e Indicador de Etapas (Ocultos no formulário conforme solicitação) -->
+        <div class="jornada-troca-container" id="containerTrocaEtapa" style="display:none;">
+          <button type="button" class="btn-jornada-troca" id="btnAbrirModalTroca" style="display:none;">
+            🔄 REGISTRAR TROCA DE LINHA / CARRO
+          </button>
+          <div class="jornada-etapa-indicador" id="indicadorEtapaAtual" style="display:none;">
+            <span class="badge-etapa-ativa" id="textoEtapaAtiva">📍 Etapa 1: Início</span>
+            <span class="badge-etapas-count" id="badgeEtapasCount">0 trocas</span>
+          </div>
+          <!-- Painel de Etapas Salvas Durante a Jornada (Oculto no formulário; exibido no card final ao Inserir) -->
+          <div id="painelEtapasSalvasEmAndamento" class="painel-etapas-andamento" style="display:none; width: 100%;"></div>
+        </div>
+
+        <!-- Linha 8: Chegada Garagem = Chegada Ponto -->
+        <div class="form-escala-row form-jornada-row--dupla">
+          <div class="jornada-ponto-col">
+            <button type="button" class="btn-jornada-hora" id="btnChegadaGaragem" aria-label="Registrar Chegada Garagem">Chegada Garagem</button>
+            <input type="text" id="inputChegadaGaragem" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
+          </div>
+          <div class="jornada-ponto-col">
+            <button type="button" class="btn-jornada-hora" id="btnChegadaPonto1" aria-label="Registrar Chegada Ponto">Chegada Ponto</button>
+            <input type="text" id="inputChegadaPonto1" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
+          </div>
+        </div>
+
+        <!-- Linha 9: Chegada Carro = Hora Vinculação -->
+        <div class="form-escala-row form-jornada-row--dupla">
+          <div class="jornada-ponto-col">
+            <button type="button" class="btn-jornada-hora" id="btnChegadaCarro" aria-label="Registrar Chegada Carro">Chegada Carro</button>
+            <input type="text" id="inputChegadaCarro" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
+          </div>
+          <div class="jornada-ponto-col">
+            <button type="button" class="btn-jornada-hora" id="btnHoraVinculacao" aria-label="Registrar Hora Vinculação">Hora Vinculação</button>
+            <input type="text" id="inputHoraVinculacao" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
+          </div>
+        </div>
+
+        <!-- Linha 10: Tabela de Roletas e Pontos de Viagem -->
+        <div class="jornada-tabela-viagem-container" id="tabelaViagemContainer">
+          <!-- Linha de Botões (Cabeçalho) -->
+          <div class="form-escala-row form-jornada-row--viagem-header">
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--static" id="btnCarroViagem" tabindex="-1">Carro</button>
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--roleta" id="btnRoletas" title="Clique para abrir nova linha abaixo">
+              Roletas <span class="badge-add-sessao">+</span>
+            </button>
+            <button type="button" class="btn-jornada-hora" id="btnChegadaPonto2" aria-label="Registrar Chegada Ponto">Chegada Ponto</button>
+            <button type="button" class="btn-jornada-hora" id="btnFiscalizacao1" aria-label="Registrar Fiscalização 1">Fiscali<wbr>zação</button>
+            <button type="button" class="btn-jornada-hora" id="btnSaidaPonto" aria-label="Registrar Saída Ponto">Saída Ponto</button>
+            <button type="button" class="btn-jornada-hora" id="btnChegadaPlaca" aria-label="Registrar Chegada Placa">Chegada Placa</button>
+            <button type="button" class="btn-jornada-hora" id="btnFiscalizacao2" aria-label="Registrar Fiscalização 2">Fiscali<wbr>zação</button>
+            <button type="button" class="btn-jornada-hora" id="btnSaidaPlaca" aria-label="Registrar Saída Placa">Saída placa</button>
+          </div>
+
+          <!-- Linhas de Inputs (Dados - Geradas dinamicamente ao clicar em Roletas (+)) -->
+          <div id="containerLinhasRoletas" class="container-linhas-roletas"></div>
+        </div>
+
+        <!-- Divisor de Destaque (Linha Gradiente Imagem 2) -->
+        <div class="jornada-divisor-linha" aria-hidden="true"></div>
+
+        <!-- Seção: Carro, Roleta Inicial, Roleta Final, Passageiros -->
+        <div class="jornada-secao-bloco" id="secaoRoletasTotais">
+          <div class="form-escala-row form-jornada-row--roletas-total form-jornada-row--roletas-header">
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--static" id="btnRoletaTotalCarro" tabindex="-1">Carro</button>
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--static" id="btnRoletaInicial" tabindex="-1">Roleta Inicial</button>
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--static" id="btnRoletaFinal" tabindex="-1">Roleta Final</button>
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--static" id="btnRoletaPassageiros" tabindex="-1">Passageiros</button>
+          </div>
+          <div id="containerRoletasTotaisLinhas" class="container-secao-linhas-multi">
+            <div class="form-escala-row form-jornada-row--roletas-total" data-carro="">
+              <input type="text" id="inputRoletaTotalCarro" class="input-escala col-jornada-carro-viagem" placeholder="Carro" readonly />
+              <input type="text" id="inputRoletaInicial" class="input-escala input-jornada-info input-roleta-ini-item" placeholder="Roleta Inicial" readonly />
+              <input type="text" id="inputRoletaFinal" class="input-escala input-jornada-info input-roleta-fim-item" placeholder="Roleta Final" readonly />
+              <input type="text" id="inputRoletaPassageiros" class="input-escala input-jornada-info input-roleta-pass-item" placeholder="Passageiros" readonly />
+            </div>
+          </div>
+        </div>
+
+        <!-- Divisor Entre Roletas Totais e Validador -->
+        <div class="jornada-divisor-linha" aria-hidden="true"></div>
+
+        <!-- Seção 1: Validador Informações -->
+        <div class="jornada-secao-bloco" id="secaoValidadorInfo">
+          <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-secao-titulo" id="btnTituloValidador" tabindex="-1">Validador Informações</button>
+          <div class="form-escala-row form-jornada-row--validador form-jornada-row--validador-header">
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" id="btnValidadorCarro" tabindex="-1">Carro</button>
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" tabindex="-1">Gratuidade:</button>
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" tabindex="-1">Vales Transportes:</button>
+            <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" tabindex="-1">QrCode:</button>
+          </div>
+          <div id="containerValidadorLinhas" class="container-secao-linhas-multi">
+            <div class="form-escala-row form-jornada-row--validador" data-carro="">
+              <input type="text" id="inputValidadorCarro" class="input-escala col-jornada-carro-viagem" placeholder="Carro" readonly />
+              <input type="text" id="inputValidadorGratuidade" class="input-escala input-jornada-info validador-gratuidade-item" placeholder="Gratuidade" inputmode="numeric" />
+              <input type="text" id="inputValidadorVales" class="input-escala input-jornada-info validador-vales-item" placeholder="Vales Transp." inputmode="numeric" />
+              <input type="text" id="inputValidadorQrCode" class="input-escala input-jornada-info validador-qrcode-item" placeholder="QrCode" inputmode="numeric" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Divisor Entre Validador e Filipeta -->
+        <div class="jornada-divisor-linha" aria-hidden="true"></div>
+
+        <!-- Seção 2: Filipeta Informações -->
+        <div class="jornada-secao-bloco" id="secaoFilipetaInfo">
+          <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-secao-titulo" id="btnTituloFilipeta" tabindex="-1">Filipeta Informações</button>
+          <div class="secao-filipeta-scroll-wrapper">
+            <div class="form-escala-row form-jornada-row--filipeta form-jornada-row--filipeta-header">
+              <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" id="btnFilipetaCarro" tabindex="-1">Carro</button>
+              <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" tabindex="-1">N°. Coleta:</button>
+              <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" tabindex="-1">Pagantes:</button>
+              <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" tabindex="-1">Gratuidades:</button>
+              <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" tabindex="-1">Vales Transporte:</button>
+              <button type="button" class="btn-jornada-hora btn-jornada-hora--static btn-jornada-rotulo" tabindex="-1">Passageiros:</button>
+            </div>
+            <div id="containerFilipetaLinhas" class="container-secao-linhas-multi">
+              <div class="form-escala-row form-jornada-row--filipeta" data-carro="">
+                <input type="text" id="inputFilipetaCarro" class="input-escala col-jornada-carro-viagem" placeholder="Carro" readonly />
+                <input type="text" id="inputFilipetaColeta" class="input-escala input-jornada-info filipeta-coleta-item" placeholder="N°. Coleta" inputmode="numeric" />
+                <input type="text" id="inputFilipetaPagantes" class="input-escala input-jornada-info filipeta-pagantes-item" placeholder="Pagantes" inputmode="numeric" />
+                <input type="text" id="inputFilipetaGratuidades" class="input-escala input-jornada-info filipeta-gratuidades-item" placeholder="Gratuidades" inputmode="numeric" />
+                <input type="text" id="inputFilipetaVales" class="input-escala input-jornada-info filipeta-vales-item" placeholder="Vales Transp." inputmode="numeric" />
+                <input type="text" id="inputFilipetaPassageiros" class="input-escala input-jornada-info filipeta-passageiros-item" placeholder="Passageiros" inputmode="numeric" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- CARD BASE — Onde os registros da jornada serão exibidos -->
+    <article class="card card--base card--escala" id="cardBase" aria-label="Módulo de Controle de Jornada">
+      <div id="jornadaContainer" class="lista-escala-container">
+        <!-- Itens inseridos aparecem aqui -->
+      </div>
+    </article>
+  </main>
+
+  <!-- ============================================================
+       RODAPÉ DA APLICAÇÃO
+       ============================================================ -->
+  <footer class="app-footer" role="contentinfo">
+    <p class="app-footer__text">
+      &copy; <span id="footerYear"></span> Auto Viação Reginas —
+      <span class="app-footer__version">v2.4.0</span>
+    </p>
+  </footer>
+
+  <!-- MODAL / POPUP DE TROCA DE LINHA / CARRO (Direto no body para popup perfeitamente centralizado) -->
+  <div class="modal-troca-overlay" id="modalTroca" style="display:none;" aria-hidden="true">
+    <div class="modal-troca-card" role="dialog" aria-modal="true" aria-labelledby="modalTrocaTitulo">
+      <div class="modal-troca-header">
+        <h3 id="modalTrocaTitulo" class="modal-troca-titulo">🔄 Registrar Troca na Jornada</h3>
+        <button type="button" class="btn-modal-fechar" id="btnFecharModalTroca" aria-label="Fechar">✕</button>
+      </div>
+
+      <p class="modal-troca-sub">Selecione o tipo de troca que ocorreu durante a jornada:</p>
+
+      <div class="modal-troca-tabs" id="modalTrocaTabs">
+        <button type="button" class="tab-troca-btn tab-troca-btn--active" id="tabTrocaLinha" data-tipo="linha">🔀 Linha</button>
+        <button type="button" class="tab-troca-btn" id="tabTrocaCarro" data-tipo="carro">🚌 Carro</button>
+        <button type="button" class="tab-troca-btn" id="tabTrocaAmbos" data-tipo="ambos">🔄 Linha & Carro</button>
+      </div>
+
+      <!-- Painel 1: Troca de Linha (mesmo carro) -->
+      <div class="modal-troca-painel" id="painelTrocaLinha">
+        <div class="modal-troca-desc">O carro atual (<strong id="lblCarroAtualLinha">--</strong>) será mantido. Digite a nova linha:</div>
+        <div class="modal-troca-group">
+          <label for="inputTrocaNovaLinha" class="modal-troca-label">Número da Nova Linha:</label>
+          <input type="text" id="inputTrocaNovaLinha" class="input-escala input-troca-field" placeholder="Ex: 497T" />
+          <div class="modal-troca-feedback" id="feedbackTrocaLinha"></div>
+        </div>
+      </div>
+
+      <!-- Painel 2: Troca de Carro (mesma linha) -->
+      <div class="modal-troca-painel" id="painelTrocaCarro" style="display:none;">
+        <div class="modal-troca-desc">A linha atual (<strong id="lblLinhaAtualCarro">--</strong>) será mantida. Preencha os dados:</div>
+        
+        <div class="modal-troca-desc" style="margin-top: 4px;">Fechamento do Carro Atual (<span id="lblCarroFechamento">--</span>):</div>
+        <div class="modal-troca-grid-2">
+          <div class="modal-troca-group">
+            <label for="inputTrocaKmFinalPainelCarroAtual" class="modal-troca-label">KM Final Painel:</label>
+            <input type="text" id="inputTrocaKmFinalPainelCarroAtual" class="input-escala input-troca-field" placeholder="Painel Final" inputmode="numeric" />
+          </div>
+          <div class="modal-troca-group">
+            <label for="inputTrocaKmFinalTacoCarroAtual" class="modal-troca-label">KM Final Tacógrafo:</label>
+            <input type="text" id="inputTrocaKmFinalTacoCarroAtual" class="input-escala input-troca-field" placeholder="Tacógrafo Final" inputmode="numeric" />
+          </div>
+        </div>
+
+        <div class="modal-troca-group" style="margin-top: 4px;">
+          <label for="inputTrocaNovoCarro" class="modal-troca-label">Número do Novo Carro:</label>
+          <input type="text" id="inputTrocaNovoCarro" class="input-escala input-troca-field" placeholder="Ex: 110.010" maxlength="15" />
+          <div class="modal-troca-feedback" id="feedbackTrocaCarro"></div>
+        </div>
+
+        <div class="modal-troca-desc" style="margin-top: 4px;">Abertura do Novo Carro:</div>
+        <div class="modal-troca-grid-2">
+          <div class="modal-troca-group">
+            <label for="inputTrocaKmInicialPainelNovoCarro" class="modal-troca-label">KM Inicial Painel:</label>
+            <input type="text" id="inputTrocaKmInicialPainelNovoCarro" class="input-escala input-troca-field" placeholder="Painel Inicial" inputmode="numeric" />
+          </div>
+          <div class="modal-troca-group">
+            <label for="inputTrocaKmInicialTacoNovoCarro" class="modal-troca-label">KM Inicial Tacógrafo:</label>
+            <input type="text" id="inputTrocaKmInicialTacoNovoCarro" class="input-escala input-troca-field" placeholder="Tacógrafo Inicial" inputmode="numeric" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel 3: Troca de Ambos (nova linha e novo carro) -->
+      <div class="modal-troca-painel" id="painelTrocaAmbos" style="display:none;">
+        <div class="modal-troca-desc">Preencha a nova linha e o novo carro da próxima etapa:</div>
+        <div class="modal-troca-group">
+          <label for="inputTrocaAmbosNovaLinha" class="modal-troca-label">Número da Nova Linha:</label>
+          <input type="text" id="inputTrocaAmbosNovaLinha" class="input-escala input-troca-field" placeholder="Ex: 121T" />
+          <div class="modal-troca-feedback" id="feedbackTrocaAmbosLinha"></div>
+        </div>
+
+        <div class="modal-troca-desc" style="margin-top: 4px;">Fechamento do Carro Atual (<span id="lblCarroFechamentoAmbos">--</span>):</div>
+        <div class="modal-troca-grid-2">
+          <div class="modal-troca-group">
+            <label for="inputTrocaAmbosKmFinalPainelCarroAtual" class="modal-troca-label">KM Final Painel:</label>
+            <input type="text" id="inputTrocaAmbosKmFinalPainelCarroAtual" class="input-escala input-troca-field" placeholder="Painel Final" inputmode="numeric" />
+          </div>
+          <div class="modal-troca-group">
+            <label for="inputTrocaAmbosKmFinalTacoCarroAtual" class="modal-troca-label">KM Final Tacógrafo:</label>
+            <input type="text" id="inputTrocaAmbosKmFinalTacoCarroAtual" class="input-escala input-troca-field" placeholder="Tacógrafo Final" inputmode="numeric" />
+          </div>
+        </div>
+
+        <div class="modal-troca-group" style="margin-top: 4px;">
+          <label for="inputTrocaAmbosNovoCarro" class="modal-troca-label">Número do Novo Carro:</label>
+          <input type="text" id="inputTrocaAmbosNovoCarro" class="input-escala input-troca-field" placeholder="Ex: 110.010" maxlength="15" />
+          <div class="modal-troca-feedback" id="feedbackTrocaAmbosCarro"></div>
+        </div>
+
+        <div class="modal-troca-desc" style="margin-top: 4px;">Abertura do Novo Carro:</div>
+        <div class="modal-troca-grid-2">
+          <div class="modal-troca-group">
+            <label for="inputTrocaAmbosKmInicialPainelNovoCarro" class="modal-troca-label">KM Inicial Painel:</label>
+            <input type="text" id="inputTrocaAmbosKmInicialPainelNovoCarro" class="input-escala input-troca-field" placeholder="Painel Inicial" inputmode="numeric" />
+          </div>
+          <div class="modal-troca-group">
+            <label for="inputTrocaAmbosKmInicialTacoNovoCarro" class="modal-troca-label">KM Inicial Tacógrafo:</label>
+            <input type="text" id="inputTrocaAmbosKmInicialTacoNovoCarro" class="input-escala input-troca-field" placeholder="Tacógrafo Inicial" inputmode="numeric" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-troca-acoes">
+        <button type="button" class="btn-modal-acao btn-modal-confirmar" id="btnConfirmarTroca">Confirmar Troca</button>
+        <button type="button" class="btn-modal-acao btn-modal-cancelar" id="btnCancelarTroca">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       IMPORTAÇÃO DOS SCRIPTS MODULARES
+       ============================================================ -->
+  <script src="versao.js" defer></script>
+  <script src="relogio.js" defer></script>
+  <script src="script.js" defer></script>
+
+</body>
+
+</html>

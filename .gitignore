@@ -1,3 +1,6 @@
-# Pastas de backup locais
+# Pastas de backup e testes locais
 backup/
+scratch/
+.agents/
+.vscode/
 *.log
