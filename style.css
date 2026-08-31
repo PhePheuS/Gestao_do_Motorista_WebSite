@@ -449,6 +449,54 @@ body {
   color: #ff5252;
 }
 
+/* Botões WhatsApp no Topo da Jornada */
+.topo-acoes-linha--whatsapp {
+  margin-top: 2px;
+  gap: 12px;
+}
+
+.btn-whatsapp-topo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: #25d366;
+  color: #ffffff;
+  border: 1px solid #1ebd5a;
+  border-radius: var(--radius-pill);
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: var(--font-family-ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0 18px;
+  height: 36px;
+  min-height: 36px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 12px rgba(37, 211, 102, 0.35);
+}
+
+.btn-whatsapp-topo:hover {
+  background-color: #128c7e;
+  border-color: #0e7064;
+  box-shadow: 0 0 16px rgba(37, 211, 102, 0.5);
+}
+
+.btn-whatsapp-topo:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+.btn-whatsapp-topo .whatsapp-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 /* Badge de status abaixo do relógio */
 .clock-badge {
   display: flex;
@@ -1306,6 +1354,18 @@ body {
 .col-jornada-hora-ponto[readonly]:focus {
   border-color: rgba(0, 170, 255, 0.2);
   box-shadow: none;
+  outline: none;
+}
+
+.col-jornada-hora-ponto:not([readonly]) {
+  cursor: text;
+  background-color: #0b172a;
+  border-color: rgba(0, 170, 255, 0.4);
+}
+
+.col-jornada-hora-ponto:not([readonly]):focus {
+  border-color: #00aaff;
+  box-shadow: 0 0 6px rgba(0, 170, 255, 0.4);
   outline: none;
 }
 

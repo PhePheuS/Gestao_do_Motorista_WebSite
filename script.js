@@ -930,6 +930,7 @@ function initCarrosModule() {
    ============================================================ */
 
 const AVARIAS_STORAGE_KEY = 'controle_motorista_avarias';
+const AVARIAS_RASCUNHO_KEY = 'controle_motorista_avarias_rascunho';
 
 const TABELA_AVARIAS_144 = [
   { cod: 1, nome: 'PONTEIRA DIANT. "E" QUEBRADA', lado: 'E', sec: 'ponteira_diant', tipo: 'quebrada' },
@@ -1117,7 +1118,7 @@ function initAvariasModule() {
   const datalistCarros = document.getElementById('listaCarrosJornadaDatalist');
 
   /**
-   * Obtém a data e os carros persistentes da jornada (rascunho ativo ou jornada concluída).
+   * Obtém a data e os carros persistentes exclusivamente da jornada (rascunho ativo de jornada.html).
    * Suporta o histórico completo de trocas de carro, de linha e de ambos (carro e linha).
    */
   function obterDadosPersistentesJornada() {
@@ -1126,7 +1127,7 @@ function initAvariasModule() {
     const carrosHistorico = []; // Array de { numero, rotulo, tipo: 'inicial' | 'anterior' | 'atual' }
 
     try {
-      // 1. Tenta pegar do rascunho ativo de jornada (prioridade máxima)
+      // Obtém exclusivamente do rascunho ativo digitado/persistente de jornada.html
       const rascunhoRaw = localStorage.getItem('controle_motorista_jornada_rascunho');
       if (rascunhoRaw) {
         const rascunho = JSON.parse(rascunhoRaw);
@@ -1149,35 +1150,6 @@ function initAvariasModule() {
               });
             }
           });
-        }
-      }
-
-      // 2. Se não encontrou no rascunho, busca na lista de jornadas salvas
-      if (!dataJornada || !carroAtual) {
-        const jornadasRaw = localStorage.getItem('controle_motorista_jornada');
-        if (jornadasRaw) {
-          const jornadas = JSON.parse(jornadasRaw);
-          if (Array.isArray(jornadas) && jornadas.length > 0) {
-            const jRecente = jornadas[0]; // mais recente
-            if (!dataJornada && jRecente.data) {
-              dataJornada = jRecente.data.trim();
-            }
-            if (!carroAtual && jRecente.carroNumero) {
-              carroAtual = jRecente.carroNumero.trim().toUpperCase();
-            }
-            if (Array.isArray(jRecente.etapas)) {
-              jRecente.etapas.forEach((etapa, idx) => {
-                const num = (etapa.carroNumero || '').trim().toUpperCase();
-                if (num && !carrosHistorico.some(c => c.numero === num)) {
-                  carrosHistorico.push({
-                    numero: num,
-                    rotulo: idx === 0 ? 'Carro Inicial' : `Carro Anterior (${idx + 1})`,
-                    tipo: 'anterior'
-                  });
-                }
-              });
-            }
-          }
         }
       }
     } catch (e) {
@@ -1206,50 +1178,48 @@ function initAvariasModule() {
     };
   }
 
-  // Fallbacks caso jornada ainda não tenha registros
-  function obterDataEscalaFallback() {
-    try {
-      const dados = localStorage.getItem('controle_motorista_escala');
-      if (!dados) return '';
-      const lista = JSON.parse(dados);
-      if (Array.isArray(lista) && lista.length > 0 && lista[0].data) {
-        return lista[0].data;
-      }
-    } catch {
-      return '';
-    }
-    return '';
-  }
-
-  function obterCarroFallback() {
-    try {
-      const ultimo = localStorage.getItem('controle_motorista_ultimo_carro');
-      if (ultimo) return ultimo;
-      const dados = localStorage.getItem(CARROS_STORAGE_KEY);
-      if (!dados) return '';
-      const lista = JSON.parse(dados);
-      if (Array.isArray(lista) && lista.length > 0) {
-        return lista[lista.length - 1].numero || lista[0].numero || '';
-      }
-    } catch {
-      return '';
-    }
-    return '';
-  }
-
   const dadosJornada = obterDadosPersistentesJornada();
 
-  // 1. Campo Data: acompanha a data persistente de jornada.html
+  // Persistência em rascunho dos dados de avarias.html
+  function salvarRascunhoAvarias() {
+    try {
+      const rascunho = {
+        data: dataInput ? dataInput.value.trim() : '',
+        carro: carroInput ? carroInput.value.trim().toUpperCase() : '',
+        codigos: Array.from(avariasSelecionadas).sort((a, b) => a - b),
+        modelo: modeloAtual
+      };
+      localStorage.setItem(AVARIAS_RASCUNHO_KEY, JSON.stringify(rascunho));
+    } catch (e) {
+      console.warn('Erro ao salvar rascunho de avarias:', e);
+    }
+  }
+
+  function limparRascunhoAvarias() {
+    try {
+      localStorage.removeItem(AVARIAS_RASCUNHO_KEY);
+    } catch (e) {
+      console.warn('Erro ao limpar rascunho de avarias:', e);
+    }
+  }
+
+  // Tenta carregar rascunho persistido de avarias
+  let rascunhoAvarias = null;
+  try {
+    const rawRascunho = localStorage.getItem(AVARIAS_RASCUNHO_KEY);
+    if (rawRascunho) {
+      rascunhoAvarias = JSON.parse(rawRascunho);
+    }
+  } catch (e) {
+    rascunhoAvarias = null;
+  }
+
+  // 1. Campo Data: se houver no rascunho, restaura; senão carrega da jornada. Se ambos vazios, fica vazio.
   if (dataInput) {
-    const dataDefinida = dadosJornada.data || obterDataEscalaFallback();
-    if (dataDefinida) {
-      dataInput.value = dataDefinida;
-    } else if (!dataInput.value) {
-      const hoje = new Date();
-      const d = String(hoje.getDate()).padStart(2, '0');
-      const m = String(hoje.getMonth() + 1).padStart(2, '0');
-      const a = hoje.getFullYear();
-      dataInput.value = `${d}/${m}/${a}`;
+    if (rascunhoAvarias && typeof rascunhoAvarias.data === 'string') {
+      dataInput.value = rascunhoAvarias.data;
+    } else {
+      dataInput.value = dadosJornada.data || '';
     }
 
     // Máscara automática em tempo real para a data (DD/MM/AAAA)
@@ -1263,25 +1233,30 @@ function initAvariasModule() {
       } else {
         dataInput.value = val;
       }
+      salvarRascunhoAvarias();
     });
 
     dataInput.addEventListener('blur', () => {
       if (dataInput.value.trim()) {
         dataInput.value = formatarData(dataInput.value);
       }
+      salvarRascunhoAvarias();
     });
   }
 
-  // 2. Campo N° Carro: acompanha o carro persistente de jornada.html (lembrando trocas de carro/linha)
+  // 2. Campo N° Carro: se houver no rascunho, restaura; senão carrega da jornada. Se ambos vazios, fica vazio.
   if (carroInput) {
-    const carroDefinido = dadosJornada.carroAtual || obterCarroFallback();
-    if (carroDefinido && !carroInput.value) {
-      carroInput.value = carroDefinido;
+    if (rascunhoAvarias && typeof rascunhoAvarias.carro === 'string') {
+      carroInput.value = rascunhoAvarias.carro;
+    } else {
+      carroInput.value = dadosJornada.carroAtual || '';
     }
 
-    // Alimenta o datalist com os carros da jornada
+    // Alimenta o datalist com os carros da jornada se houver
     if (datalistCarros && dadosJornada.carros.length > 0) {
       datalistCarros.innerHTML = dadosJornada.carros.map(c => `<option value="${c.numero}">${c.rotulo}</option>`).join('');
+    } else if (datalistCarros) {
+      datalistCarros.innerHTML = '';
     }
 
     // Se houve troca de carro e há mais de 1 carro registrado na jornada, exibe botões rápidos
@@ -1309,9 +1284,13 @@ function initAvariasModule() {
             carroInput.value = num;
             atualizarChipsTrocaCarro();
             atualizarVista();
+            salvarRascunhoAvarias();
           }
         });
       });
+    } else if (containerTrocas) {
+      containerTrocas.style.display = 'none';
+      containerTrocas.innerHTML = '';
     }
 
     function atualizarChipsTrocaCarro() {
@@ -1327,7 +1306,19 @@ function initAvariasModule() {
       carroInput.value = carroInput.value.toUpperCase();
       atualizarChipsTrocaCarro();
       atualizarVista();
+      salvarRascunhoAvarias();
     });
+  }
+
+  // 3. Modelo do Ônibus: se houver no rascunho, restaura
+  if (rascunhoAvarias && (rascunhoAvarias.modelo === 1 || rascunhoAvarias.modelo === 2)) {
+    modeloAtual = rascunhoAvarias.modelo;
+  }
+
+  // 4. Códigos de Avarias Marcados: se houver no rascunho, restaura
+  if (rascunhoAvarias && Array.isArray(rascunhoAvarias.codigos) && rascunhoAvarias.codigos.length > 0) {
+    avariasSelecionadas.clear();
+    rascunhoAvarias.codigos.forEach(c => avariasSelecionadas.add(Number(c)));
   }
 
   function obterAvariaPorCodigo(cod) {
@@ -1360,21 +1351,49 @@ function initAvariasModule() {
     }
 
     sincronizarEstadoVisual();
+    salvarRascunhoAvarias();
   }
 
   function limparTodasAvarias() {
     avariasSelecionadas.clear();
     sincronizarEstadoVisual();
+    salvarRascunhoAvarias();
+  }
+
+  // Sincroniza a descrição de avarias com o rascunho de jornada.html
+  function sincronizarComJornadaAvarias(textoDescricao) {
+    try {
+      const raw = localStorage.getItem('controle_motorista_jornada_rascunho');
+      if (raw) {
+        const rascunho = JSON.parse(raw);
+        rascunho.avarias = textoDescricao || '';
+        localStorage.setItem('controle_motorista_jornada_rascunho', JSON.stringify(rascunho));
+      } else {
+        const novoRascunho = {
+          data: dataInput ? dataInput.value : '',
+          carroNumero: carroInput ? carroInput.value : '',
+          avarias: textoDescricao || ''
+        };
+        localStorage.setItem('controle_motorista_jornada_rascunho', JSON.stringify(novoRascunho));
+      }
+    } catch (e) {
+      console.warn('Erro ao sincronizar avarias com jornada:', e);
+    }
   }
 
   // Sincroniza o campo inputAvariaDescricao, as tags e os botões ativos
-  function sincronizarEstadoVisual() {
+  function sincronizarEstadoVisual(atualizarJornada = true) {
     // 1. Atualiza o input com somente os códigos selecionados (sem nome)
     const codigosOrdenados = Array.from(avariasSelecionadas).sort((a, b) => a - b);
     if (codigosOrdenados.length === 0) {
       descInput.value = '';
     } else {
       descInput.value = codigosOrdenados.join(', ');
+    }
+
+    // Sincroniza em tempo real com o campo Avarias de jornada.html
+    if (atualizarJornada) {
+      sincronizarComJornadaAvarias(descInput.value);
     }
 
     // 2. Contador
@@ -2238,11 +2257,20 @@ function initAvariasModule() {
 
   // Eventos do Seletor de Modelo
   if (btnModelo1 && btnModelo2) {
+    if (modeloAtual === 1) {
+      btnModelo1.classList.add('is-active');
+      btnModelo2.classList.remove('is-active');
+    } else {
+      btnModelo2.classList.add('is-active');
+      btnModelo1.classList.remove('is-active');
+    }
+
     btnModelo1.addEventListener('click', () => {
       modeloAtual = 1;
       btnModelo1.classList.add('is-active');
       btnModelo2.classList.remove('is-active');
       atualizarVista();
+      salvarRascunhoAvarias();
     });
 
     btnModelo2.addEventListener('click', () => {
@@ -2250,6 +2278,7 @@ function initAvariasModule() {
       btnModelo2.classList.add('is-active');
       btnModelo1.classList.remove('is-active');
       atualizarVista();
+      salvarRascunhoAvarias();
     });
   }
 
@@ -2324,13 +2353,32 @@ function initAvariasModule() {
     listaAtual.unshift(novaAvaria); // Mais recentes no topo
     localStorage.setItem(AVARIAS_STORAGE_KEY, JSON.stringify(listaAtual));
 
-    // Limpa a seleção e o campo após gravar
-    limparTodasAvarias();
+    // 1. Limpa o rascunho persistido de avarias
+    limparRascunhoAvarias();
+
+    // Sincroniza a avaria recém-inserida com o campo Avarias de jornada.html
+    sincronizarComJornadaAvarias(novaAvaria.descricao);
+
+    // 2. Limpa todo o formulário (Data, Carro, Descrição, Seleções e Chips)
+    if (dataInput) dataInput.value = '';
+    if (carroInput) {
+      carroInput.value = '';
+      if (typeof atualizarChipsTrocaCarro === 'function') {
+        atualizarChipsTrocaCarro();
+      }
+    }
+    avariasSelecionadas.clear();
+    sincronizarEstadoVisual(false);
+    atualizarVista();
 
     renderizarHistorico();
   });
 
   // Inicialização
+  if (!rascunhoAvarias && ((dataInput && dataInput.value) || (carroInput && carroInput.value))) {
+    salvarRascunhoAvarias();
+  }
+  sincronizarEstadoVisual();
   atualizarVista();
   renderizarHistorico();
 }
@@ -2485,7 +2533,7 @@ function initJornadaModule() {
 
   function obterListaCarrosJornada() {
     const lista = [];
-    if (Array.isArray(etapasJornadaAtiva)) {
+    if (Array.isArray(etapasJornadaAtiva) && etapasJornadaAtiva.length > 0) {
       etapasJornadaAtiva.forEach(etapa => {
         const c = (etapa.carroNumero || '').trim();
         if (c && !lista.includes(c)) lista.push(c);
@@ -2495,7 +2543,7 @@ function initJornadaModule() {
     if (carroAtual && !lista.includes(carroAtual)) {
       lista.push(carroAtual);
     }
-    if (containerLinhasRoletas) {
+    if (containerLinhasRoletas && etapasJornadaAtiva && etapasJornadaAtiva.length > 0) {
       const rows = containerLinhasRoletas.querySelectorAll('.form-jornada-row--viagem-dados');
       rows.forEach(r => {
         const cInp = r.querySelector('.col-jornada-carro-viagem');
@@ -2833,7 +2881,7 @@ function initJornadaModule() {
       if (kmTacoFinalInput && rascunho.kmTacoFinal) kmTacoFinalInput.value = rascunho.kmTacoFinal;
       if (kmTacoRodadoInput && rascunho.kmTacoRodado) kmTacoRodadoInput.value = rascunho.kmTacoRodado;
 
-      if (avariasInput && rascunho.avarias) avariasInput.value = rascunho.avarias;
+      if (avariasInput && rascunho.avarias !== undefined) avariasInput.value = rascunho.avarias;
 
       if (inputChegadaGaragem && rascunho.chegadaGaragem) {
         inputChegadaGaragem.value = rascunho.chegadaGaragem;
@@ -2888,17 +2936,24 @@ function initJornadaModule() {
         });
       }
 
-      // Sincroniza campos de Carro apenas nas linhas que estiverem vazias
+      // Sincroniza campos de Carro se houver carro definido no rascunho
       if (carroNumInput && carroNumInput.value.trim()) {
         document.querySelectorAll('.col-jornada-carro-viagem').forEach(inp => {
           if (!inp.value.trim()) inp.value = carroNumInput.value.trim();
         });
+      } else if (!rascunho.carroNumero && (!rascunho.etapasJornadaAtiva || rascunho.etapasJornadaAtiva.length === 0)) {
+        // Sem carro no rascunho: assegura que nenhum campo de carro fique preenchido
+        dadosValidadorPorCarro = {};
+        dadosFilipetaPorCarro = {};
+        document.querySelectorAll('.col-jornada-carro-viagem').forEach(inp => {
+          inp.value = '';
+        });
       }
 
-      if (rascunho.dadosValidadorPorCarro) {
+      if (rascunho.dadosValidadorPorCarro && (carroNumInput?.value.trim() || (rascunho.etapasJornadaAtiva && rascunho.etapasJornadaAtiva.length > 0))) {
         dadosValidadorPorCarro = rascunho.dadosValidadorPorCarro;
       }
-      if (rascunho.dadosFilipetaPorCarro) {
+      if (rascunho.dadosFilipetaPorCarro && (carroNumInput?.value.trim() || (rascunho.etapasJornadaAtiva && rascunho.etapasJornadaAtiva.length > 0))) {
         dadosFilipetaPorCarro = rascunho.dadosFilipetaPorCarro;
       }
 
@@ -2911,6 +2966,46 @@ function initJornadaModule() {
     } catch (e) {
       console.warn('[Jornada] Erro ao restaurar rascunho:', e);
     }
+  }
+
+  /**
+   * Sincroniza o campo Avarias de jornada.html com avarias.html.
+   * Se as avarias foram limpas em avarias.html, limpa também aqui em jornada.html.
+   */
+  function sincronizarAvariasComJornada() {
+    if (!avariasInput) return;
+
+    // 1. Tenta carregar do rascunho de jornada (se existir chave avarias definida)
+    try {
+      const salvo = localStorage.getItem(JORNADA_RASCUNHO_KEY);
+      if (salvo) {
+        const rascunho = JSON.parse(salvo);
+        if (rascunho && rascunho.avarias !== undefined) {
+          avariasInput.value = rascunho.avarias;
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // 2. Se não houver no rascunho de jornada, sincroniza com o rascunho ativo de avarias (avarias.html)
+    try {
+      const rawRascunhoAvarias = localStorage.getItem(AVARIAS_RASCUNHO_KEY);
+      if (rawRascunhoAvarias) {
+        const rAv = JSON.parse(rawRascunhoAvarias);
+        if (Array.isArray(rAv.codigos) && rAv.codigos.length > 0) {
+          avariasInput.value = rAv.codigos.join(', ');
+          salvarRascunhoJornada();
+          return;
+        } else {
+          avariasInput.value = '';
+          salvarRascunhoJornada();
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // Se nenhum rascunho possui avarias ativas, assegura campo limpo
+    avariasInput.value = '';
   }
 
   /**
@@ -3299,7 +3394,7 @@ function initJornadaModule() {
               <span class="col-jornada-km-val col-jornada-km-val--ponto">${s.fiscalizacao2 || '--:--'}</span>
             </div>
             <div class="item-jornada-ponto-box">
-              <span class="col-jornada-km-tag">Saída Placa</span>
+              <span class="col-jornada-km-tag">Saida Placa</span>
               <span class="col-jornada-km-val col-jornada-km-val--ponto">${s.saidaPlaca || '--:--'}</span>
             </div>
           </div>
@@ -3334,7 +3429,7 @@ function initJornadaModule() {
               <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.fiscalizacao2 || '--:--'}</span>
             </div>
             <div class="item-jornada-ponto-box">
-              <span class="col-jornada-km-tag">Saída Placa</span>
+              <span class="col-jornada-km-tag">Saida Placa</span>
               <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.saidaPlaca || '--:--'}</span>
             </div>
           </div>
@@ -3510,8 +3605,6 @@ function initJornadaModule() {
       container.innerHTML = '<p style="color: #666666; font-size: 0.9rem; text-align: center; padding: 20px 10px;">Nenhuma jornada cadastrada. Preencha os campos acima e clique em Inserir.</p>';
       return;
     }
-
-    sincronizarCarroComUltimaJornada();
 
     lista.forEach((item, index) => {
       const cardItem = document.createElement('div');
@@ -4154,14 +4247,25 @@ function initJornadaModule() {
 
   function buscarCarroJornada() {
     const num = carroNumInput ? carroNumInput.value.trim() : '';
-    // Sincroniza campos de Carro apenas nas linhas que estiverem vazias
-    document.querySelectorAll('.col-jornada-carro-viagem').forEach(inp => {
-      if (!inp.value.trim()) inp.value = num;
-    });
+    // Quando não há trocas de carro, sincroniza todas as linhas de viagem com o carro atual (ou limpa se vazio)
+    if (containerLinhasRoletas && (!etapasJornadaAtiva || etapasJornadaAtiva.length === 0)) {
+      containerLinhasRoletas.querySelectorAll('.col-jornada-carro-viagem').forEach(inp => {
+        inp.value = num;
+      });
+    }
     if (!num) {
       if (carroSiglaInput) { carroSiglaInput.value = ''; carroSiglaInput.readOnly = true; }
       if (carroPlacaInput) { carroPlacaInput.value = ''; carroPlacaInput.readOnly = true; }
+      if (!etapasJornadaAtiva || etapasJornadaAtiva.length === 0) {
+        dadosValidadorPorCarro = {};
+        dadosFilipetaPorCarro = {};
+        document.querySelectorAll('.col-jornada-carro-viagem').forEach(inp => {
+          inp.value = '';
+        });
+      }
       renderizarSecoesMultiCarro();
+      atualizarRoletasTotaisAutomaticas();
+      salvarRascunhoJornada();
       return;
     }
     const dadosCarro = buscarDadosCarro(num);
@@ -4170,7 +4274,6 @@ function initJornadaModule() {
       if (carroPlacaInput) { carroPlacaInput.value = dadosCarro.placa || ''; carroPlacaInput.readOnly = true; }
     } else {
       if (carroSiglaInput) { carroSiglaInput.value = ''; carroSiglaInput.readOnly = true; }
-      if (carroPlacaInput) { carroPlacaInput.value = ''; carroPlacaInput.readOnly = true; }
     }
     renderizarSecoesMultiCarro();
     atualizarRoletasTotaisAutomaticas();
@@ -4474,9 +4577,7 @@ function initJornadaModule() {
   }
 
   function atualizarRoletasTotaisAutomaticas() {
-    const lista = carregarJornadas();
-    const numCarroPadrao = (carroNumInput && carroNumInput.value.trim()) ||
-                          (lista.length > 0 && lista[0].carroNumero) || '';
+    const numCarroPadrao = (carroNumInput && carroNumInput.value.trim()) || '';
 
     // Agrupa roletas válidas por carro
     const roletasPorCarro = {};
@@ -4552,8 +4653,31 @@ function initJornadaModule() {
 
   function vincularLinhaDados(linhaEl) {
     const pontosInputs = linhaEl.querySelectorAll('.col-jornada-hora-ponto');
-    pontosInputs.forEach((inp) => {
-      inp.readOnly = true;
+    pontosInputs.forEach((inp, idx) => {
+      if (idx === 5 || inp.classList.contains('col-jornada-saida-placa')) {
+        inp.readOnly = false;
+        inp.removeAttribute('readonly');
+
+        // Formatação e máscara manual de horário (HH:MM) para Saida Placa
+        inp.addEventListener('input', () => {
+          let val = inp.value.replace(/\D/g, '').slice(0, 4);
+          if (val.length >= 3) {
+            inp.value = `${val.slice(0, 2)}:${val.slice(2)}`;
+          } else {
+            inp.value = val;
+          }
+          salvarRascunhoJornada();
+        });
+
+        inp.addEventListener('blur', () => {
+          if (inp.value.trim()) {
+            inp.value = formatarHorario(inp.value);
+          }
+          salvarRascunhoJornada();
+        });
+      } else {
+        inp.readOnly = true;
+      }
     });
 
     const roletasInput = linhaEl.querySelector('.col-jornada-roletas');
@@ -4668,10 +4792,8 @@ function initJornadaModule() {
     row.className = 'form-escala-row form-jornada-row--viagem-dados';
     row.setAttribute('data-linha', totalLinhasRoletas);
 
-    const lista = carregarJornadas();
     const numCarroAtual = (dadosIniciais && dadosIniciais.carro) ||
-                          (carroNumInput && carroNumInput.value.trim()) ||
-                          (lista.length > 0 && lista[0].carroNumero) || '';
+                          (carroNumInput && carroNumInput.value.trim()) || '';
 
     const roletaVal = (dadosIniciais && dadosIniciais.roletas) || '';
     const p0 = (dadosIniciais && dadosIniciais.chegadaPonto2) || '';
@@ -4684,13 +4806,13 @@ function initJornadaModule() {
     // Linha com Carro antes de Roletas (8 inputs)
     row.innerHTML = `
       <input type="text" class="input-escala col-jornada-carro-viagem" placeholder="Carro" value="${numCarroAtual}" readonly />
-      <input type="text" class="input-escala col-jornada-roletas" placeholder="Roletas" value="${roletaVal}" />
+      <input type="text" class="input-escala col-jornada-roletas" placeholder="Roletas" value="${roletaVal}" inputmode="numeric" />
       <input type="text" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" value="${p0}" readonly />
       <input type="text" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" value="${p1}" readonly />
       <input type="text" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" value="${p2}" readonly />
       <input type="text" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" value="${p3}" readonly />
       <input type="text" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" value="${p4}" readonly />
-      <input type="text" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" value="${p5}" readonly />
+      <input type="text" class="input-escala col-jornada-hora-ponto col-jornada-saida-placa" placeholder="--:--" maxlength="5" value="${p5}" inputmode="numeric" />
     `;
 
     containerLinhasRoletas.appendChild(row);
@@ -4746,24 +4868,6 @@ function initJornadaModule() {
       preencherPontoColuna(4);
     });
   }
-  if (btnSaidaPlaca) {
-    btnSaidaPlaca.addEventListener('click', (e) => {
-      e.preventDefault();
-      preencherPontoColuna(5);
-    });
-  }
-
-  function sincronizarCarroComUltimaJornada() {
-    const lista = carregarJornadas();
-    if (lista.length > 0 && lista[0].carroNumero) {
-      const ultimoCarro = lista[0].carroNumero;
-      document.querySelectorAll('.col-jornada-carro-viagem').forEach(inp => {
-        if (!inp.value.trim()) inp.value = ultimoCarro;
-      });
-    }
-    atualizarRoletasTotaisAutomaticas();
-  }
-
   // Vincula a primeira linha caso exista
   if (containerLinhasRoletas) {
     const primeiraLinha = containerLinhasRoletas.querySelector('.form-jornada-row--viagem-dados');
@@ -4772,13 +4876,12 @@ function initJornadaModule() {
     }
   }
 
-  sincronizarCarroComUltimaJornada();
-
   /* --- Renderização inicial --- */
   renderizarJornadas();
 
   /* --- Restauração de Rascunho Offline da Jornada --- */
   restaurarRascunhoJornada();
+  sincronizarAvariasComJornada();
   renderizarSecoesMultiCarro();
   calcularTodosValidadorPagantes();
 
@@ -4801,6 +4904,127 @@ function initJornadaModule() {
     form.addEventListener('input', salvarRascunhoJornada);
     form.addEventListener('change', salvarRascunhoJornada);
   }
+
+  // Sincroniza o campo Avarias em tempo real quando alterado em avarias.html
+  window.addEventListener('storage', (e) => {
+    if (e.key === JORNADA_RASCUNHO_KEY || e.key === AVARIAS_RASCUNHO_KEY) {
+      sincronizarAvariasComJornada();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    sincronizarAvariasComJornada();
+  });
+
+  /* --- Envio de WhatsApp (TOTAL e PARCIAL) --- */
+  const btnWhatsappTotal = document.getElementById('btnWhatsappTotal');
+  const btnWhatsappParcial = document.getElementById('btnWhatsappParcial');
+
+  function obterSaudacaoHorario() {
+    const hora = new Date().getHours();
+    if (hora >= 5 && hora < 12) {
+      return 'Bom dia';
+    } else if (hora >= 12 && hora < 18) {
+      return 'Boa tarde';
+    } else {
+      return 'Boa noite';
+    }
+  }
+
+  function obterPrimeiraEUltimaRoleta() {
+    let primeira = '';
+    let ultima = '';
+
+    if (containerLinhasRoletas) {
+      const inputs = Array.from(containerLinhasRoletas.querySelectorAll('.col-jornada-roletas'))
+        .map(inp => inp.value.trim())
+        .filter(v => v !== '');
+      if (inputs.length > 0) {
+        primeira = inputs[0];
+        ultima = inputs[inputs.length - 1];
+      }
+    }
+
+    if (!primeira && inputRoletaInicial && inputRoletaInicial.value.trim()) {
+      primeira = inputRoletaInicial.value.trim();
+    }
+    if (!ultima && inputRoletaFinal && inputRoletaFinal.value.trim()) {
+      ultima = inputRoletaFinal.value.trim();
+    }
+
+    return { primeira, ultima };
+  }
+
+  function enviarWhatsappJornada(tipo) {
+    const semana = semanaInput ? semanaInput.value.trim() : '';
+    const data = dataInput ? dataInput.value.trim() : '';
+    const matricula = matInput ? matInput.value.trim() : '';
+    const nome = motInput ? motInput.value.trim() : '';
+    const carro = carroNumInput ? carroNumInput.value.trim() : '';
+    const { primeira: primeiraRoleta, ultima: ultimaRoleta } = obterPrimeiraEUltimaRoleta();
+    const avarias = avariasInput ? avariasInput.value.trim() : '';
+
+    if (!data && !carro && !matricula) {
+      alert('Por favor, preencha os dados da jornada antes de enviar via WhatsApp.');
+      return;
+    }
+
+    const saudacao = obterSaudacaoHorario();
+    const linha1 = [semana, data].filter(Boolean).join(', ');
+    const linha2 = [matricula, nome].filter(Boolean).join(', ');
+    const linha3 = carro || '--';
+
+    let mensagem = '';
+
+    if (tipo === 'TOTAL') {
+      const linha4 = primeiraRoleta || '--';
+      const linha5 = avarias || 'Sem avarias';
+      mensagem = `${saudacao}\n\n${linha1}\n${linha2}\n${linha3}\n${linha4}\n${linha5}`;
+    } else {
+      // PARCIAL
+      const linha4 = ultimaRoleta || '--';
+      mensagem = `${saudacao}\n\n${linha1}\n${linha2}\n${linha3}\n${linha4}`;
+    }
+
+    dispararEnvioWhatsapp(mensagem);
+  }
+
+  function dispararEnvioWhatsapp(mensagem) {
+    // 1. Tenta Web Share API nativa do dispositivo (abre o seletor nativo listando WhatsApp Comum e WhatsApp Business)
+    if (navigator.share) {
+      navigator.share({
+        text: mensagem
+      }).catch(err => {
+        if (err && err.name === 'AbortError') return;
+        abrirLinkWhatsappDireto(mensagem);
+      });
+      return;
+    }
+
+    abrirLinkWhatsappDireto(mensagem);
+  }
+
+  function abrirLinkWhatsappDireto(mensagem) {
+    // Link universal para WhatsApp Comum e WhatsApp Business
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (link.parentNode) link.parentNode.removeChild(link);
+    }, 100);
+  }
+
+  if (btnWhatsappTotal) {
+    btnWhatsappTotal.addEventListener('click', () => enviarWhatsappJornada('TOTAL'));
+  }
+  if (btnWhatsappParcial) {
+    btnWhatsappParcial.addEventListener('click', () => enviarWhatsappJornada('PARCIAL'));
+  }
+
   window.addEventListener('beforeunload', salvarRascunhoJornada);
 }
 

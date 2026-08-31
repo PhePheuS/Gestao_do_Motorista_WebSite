@@ -80,15 +80,15 @@
       <form id="formInserirEscala" class="form-escala-wrapper">
         <!-- Linha 1: Data, Linha, Nome da Linha -->
         <div class="form-escala-row form-escala-row--top">
-          <input type="text" id="inputData" class="input-escala col-data" placeholder="Data" maxlength="10" required />
+          <input type="text" id="inputData" class="input-escala col-data" placeholder="Data" maxlength="10" inputmode="numeric" required />
           <input type="text" id="inputLinhaNumero" class="input-escala col-linha-num" placeholder="Linha" maxlength="10" required />
           <input type="text" id="inputLinhaNome" class="input-escala col-linha-nome" placeholder="Nome da Linha" readonly />
         </div>
         <!-- Linha 2: Horário, Local Saída, Matrícula, Motorista -->
         <div class="form-escala-row form-escala-row--bottom">
-          <input type="text" id="inputHorario" class="input-escala col-hora" placeholder="Horário" maxlength="5" required />
+          <input type="text" id="inputHorario" class="input-escala col-hora" placeholder="Horário" maxlength="5" inputmode="numeric" required />
           <input type="text" id="inputLocalSaida" class="input-escala col-local" placeholder="Local Saída" required />
-          <input type="text" id="inputMatricula" class="input-escala col-mat" placeholder="Matrícula" required />
+          <input type="text" id="inputMatricula" class="input-escala col-mat" placeholder="Matrícula" inputmode="numeric" pattern="[0-9]*" required />
           <input type="text" id="inputMotorista" class="input-escala col-motorista" placeholder="Motorista" required />
         </div>
       </form>

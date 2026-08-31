@@ -80,8 +80,8 @@
     <section class="barra-inserir-container" aria-label="Campos de cadastro de avarias">
       <form id="formInserirAvaria" class="form-escala-wrapper">
         <div class="form-escala-row form-avarias-row">
-          <input type="text" id="inputAvariaData" class="input-escala col-avaria-data" placeholder="Data" maxlength="10" />
-          <input type="text" id="inputAvariaCarro" class="input-escala col-avaria-carro" placeholder="N° Carro" maxlength="15" list="listaCarrosJornadaDatalist" autocomplete="off" required />
+          <input type="text" id="inputAvariaData" class="input-escala col-avaria-data" placeholder="Data" maxlength="10" inputmode="numeric" />
+          <input type="text" id="inputAvariaCarro" class="input-escala col-avaria-carro" placeholder="N° Carro" maxlength="15" list="listaCarrosJornadaDatalist" autocomplete="off" inputmode="numeric" required />
           <datalist id="listaCarrosJornadaDatalist"></datalist>
           <input type="text" id="inputAvariaDescricao" class="input-escala col-avaria-descricao" placeholder="Avarias selecionadas aparecerão aqui..." readonly required />
         </div>
@@ -192,7 +192,7 @@
   <footer class="app-footer" role="contentinfo">
     <p class="app-footer__text">
       &copy; <span id="footerYear"></span> Gestor Motorista —
-      <span class="app-footer__version">v2.33.0</span>
+      <span class="app-footer__version">v2.43.0</span>
     </p>
   </footer>
 
