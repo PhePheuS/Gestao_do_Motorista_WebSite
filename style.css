@@ -667,6 +667,13 @@ body {
   box-shadow: 0 0 16px rgba(0, 170, 255, 0.4);
 }
 
+@media (max-width: 380px) {
+  .btn-card-action {
+    padding: 8px 12px;
+    font-size: 0.90rem;
+  }
+}
+
 /* ============================================================
    10. BARRA DE INSERÇÃO ACIMA DO CARD (MÓDULO ESCALA)
    ============================================================ */
@@ -947,13 +954,55 @@ body {
   margin: 6px 0;
 }
 
-/* Linha 7 do formulário de jornada (Avarias — largura total) */
+/* Linha 7 do formulário de jornada (Botão Avarias + Campo Avarias) */
 .form-jornada-row--bottom {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
+  display: flex;
   align-items: center;
+  gap: 8px;
   width: 100%;
+}
+
+/* Botão Avarias em jornada.html antes do campo Avarias */
+.btn-jornada-avarias {
+  min-height: 38px;
+  background: linear-gradient(180deg, #102a45 0%, #081627 100%);
+  color: #00d0ff;
+  border: 1px solid rgba(0, 170, 255, 0.4);
+  border-radius: var(--radius-md);
+  font-size: 0.86rem;
+  font-weight: 700;
+  font-family: var(--font-family-ui);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6px 14px;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.btn-jornada-avarias:hover {
+  background: linear-gradient(180deg, #173b61 0%, #0c213a 100%);
+  border-color: #00e676;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.35);
+}
+
+.btn-jornada-avarias:active {
+  transform: scale(0.97);
+  background: #00aaff;
+  color: #000000;
+}
+
+.form-jornada-row--bottom .col-jornada-avarias {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Card de cada jornada cadastrada */
@@ -1115,6 +1164,37 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   align-items: stretch;
+  width: 100%;
+}
+
+.form-jornada-row--tripla {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.form-jornada-row--tripla .btn-jornada-hora {
+  font-size: 0.70rem;
+  padding: 4px 2px;
+  min-height: 32px;
+  line-height: 1.12;
+  white-space: normal;
+  text-align: center;
+}
+
+.form-jornada-row--tripla .col-jornada-hora-ponto {
+  height: 28px;
+  font-size: 0.74rem;
+  padding: 2px 1px;
+}
+
+.item-jornada-row--tripla {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  align-items: center;
   width: 100%;
 }
 
@@ -3077,6 +3157,20 @@ body.device-tablet .clock-container {
   .form-jornada-row--viagem-dados .col-jornada-hora-ponto {
     font-size: 0.72rem;
     padding: 3px 1px;
+  }
+
+  .form-jornada-row--tripla {
+    gap: 4px;
+  }
+  .form-jornada-row--tripla .btn-jornada-hora {
+    font-size: 0.65rem;
+    padding: 3px 1px;
+    min-height: 28px;
+    line-height: 1.08;
+  }
+  .form-jornada-row--tripla .col-jornada-hora-ponto {
+    height: 26px;
+    font-size: 0.68rem;
   }
 }
 

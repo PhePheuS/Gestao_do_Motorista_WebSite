@@ -60,7 +60,7 @@
     <div class="selected-badge-container" id="selectedBadgeContainer" aria-live="polite">
       <span class="selected-badge" id="selectedBadge">AVARIAS</span>
       <div class="topo-acoes-linha">
-        <a href="index.html" class="btn-voltar-topo" id="btnVoltarTopo" aria-label="Voltar para a tela inicial">
+        <a href="jornada.html" class="btn-voltar-topo" id="btnVoltarTopo" aria-label="Voltar para a jornada">
           VOLTAR
         </a>
         <button type="submit" form="formInserirAvaria" class="btn-inserir-topo" id="btnInserirAvaria" aria-label="Inserir avaria">
@@ -133,22 +133,22 @@
         </div>
       </div>
 
-      <!-- Abas de Vistas: Linha 1 (L/D e L/E), Linha 2 (Frente e Fundo), Linha 3 (1 ao 144) -->
+      <!-- Abas de Vistas: Linha 1 (Dianteira e L/E), Linha 2 (Traseira e L/D), Linha 3 (1 ao 144) -->
       <nav class="avarias-vistas-grid" role="tablist" aria-label="Vistas do ônibus">
         <div class="avarias-vistas-row">
-          <button type="button" class="avaria-tab-btn is-active" id="tabLadoDireito" data-vista="LD" role="tab" aria-selected="true">
-            Lado Direito ( Porta L/D )
+          <button type="button" class="avaria-tab-btn is-active" id="tabDianteira" data-vista="DIAN" role="tab" aria-selected="true">
+            Dianteira ( Frente )
           </button>
           <button type="button" class="avaria-tab-btn" id="tabLadoEsquerdo" data-vista="LE" role="tab" aria-selected="false">
             Lado Esquerdo ( Porta L/E )
           </button>
         </div>
         <div class="avarias-vistas-row">
-          <button type="button" class="avaria-tab-btn" id="tabDianteira" data-vista="DIAN" role="tab" aria-selected="false">
-            Dianteira ( Frente )
-          </button>
           <button type="button" class="avaria-tab-btn" id="tabTraseira" data-vista="TRAS" role="tab" aria-selected="false">
             Traseira ( Fundo )
+          </button>
+          <button type="button" class="avaria-tab-btn" id="tabLadoDireito" data-vista="LD" role="tab" aria-selected="false">
+            Lado Direito ( Porta L/D )
           </button>
         </div>
         <div class="avarias-vistas-row avarias-vistas-row--full">

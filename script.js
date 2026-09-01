@@ -327,6 +327,31 @@ function formatarHorario(valor) {
 }
 
 /**
+ * Formata o código de avaria com zero à esquerda para números de 1 a 9 (ex: 01 a 09)
+ */
+function formatarCodigoAvaria(cod) {
+  const num = parseInt(cod, 10);
+  if (isNaN(num)) return String(cod).trim();
+  return num < 10 ? `0${num}` : String(num);
+}
+
+/**
+ * Normaliza e formata lista textual de códigos de avarias separados por ponto (.)
+ * Ex: "1, 5, 28" ou "1.5.28" -> "01.05.28"
+ */
+function formatarTextoAvarias(texto) {
+  if (!texto || typeof texto !== 'string') return '';
+  const limpo = texto.trim();
+  if (!limpo) return '';
+  const partes = limpo.split(/[,;\s.]+/).filter(Boolean);
+  const todosNumeros = partes.length > 0 && partes.every(p => /^\d+$/.test(p));
+  if (todosNumeros) {
+    return partes.map(formatarCodigoAvaria).join('.');
+  }
+  return limpo;
+}
+
+/**
  * Gerencia a inserção e exibição das escalas em escala.html
  */
 function initEscalaModule() {
@@ -1111,7 +1136,8 @@ function initAvariasModule() {
 
   // Estado do Módulo
   let modeloAtual = 1; // 1 = Ônibus 6 Chapas (Médio), 2 = Ônibus 7 Chapas (Longo)
-  let vistaAtual = 'LD'; // 'LD', 'LE', 'DIAN', 'TRAS', 'LISTA'
+  const tabAtivaInicial = document.querySelector('.avaria-tab-btn.is-active');
+  let vistaAtual = tabAtivaInicial ? tabAtivaInicial.getAttribute('data-vista') : 'DIAN'; // 'DIAN', 'LE', 'TRAS', 'LD', 'LISTA'
   const avariasSelecionadas = new Set(); // Conjunto de códigos numéricos ativos
 
   const containerTrocas = document.getElementById('containerTrocasCarroJornada');
@@ -1325,6 +1351,13 @@ function initAvariasModule() {
     return TABELA_AVARIAS_144.find(item => item.cod === cod);
   }
 
+  // Formata o código de avaria com zero à esquerda para números de 1 a 9 (ex: 01 a 09)
+  function formatarCodigoAvaria(cod) {
+    const num = parseInt(cod, 10);
+    if (isNaN(num)) return String(cod).trim();
+    return num < 10 ? `0${num}` : String(num);
+  }
+
   // Alterna uma avaria no conjunto
   function alternarAvaria(cod) {
     const item = obterAvariaPorCodigo(cod);
@@ -1383,12 +1416,12 @@ function initAvariasModule() {
 
   // Sincroniza o campo inputAvariaDescricao, as tags e os botões ativos
   function sincronizarEstadoVisual(atualizarJornada = true) {
-    // 1. Atualiza o input com somente os códigos selecionados (sem nome)
+    // 1. Atualiza o input com os códigos selecionados (sem nome), zero à esquerda (01 a 09) e separados por ponto
     const codigosOrdenados = Array.from(avariasSelecionadas).sort((a, b) => a - b);
     if (codigosOrdenados.length === 0) {
       descInput.value = '';
     } else {
-      descInput.value = codigosOrdenados.join(', ');
+      descInput.value = codigosOrdenados.map(formatarCodigoAvaria).join('.');
     }
 
     // Sincroniza em tempo real com o campo Avarias de jornada.html
@@ -1401,7 +1434,7 @@ function initAvariasModule() {
       contadorAvarias.textContent = String(avariasSelecionadas.size);
     }
 
-    // 3. Tags / Chips no painel superior: somente o código sem nome
+    // 3. Tags / Chips no painel superior: código formatado sem nome
     if (containerTags) {
       if (avariasSelecionadas.size === 0) {
         containerTags.innerHTML = '<span class="avarias-tag-empty">Nenhuma avaria marcada no ônibus.</span>';
@@ -1409,11 +1442,12 @@ function initAvariasModule() {
         containerTags.innerHTML = '';
         codigosOrdenados.forEach(c => {
           const it = obterAvariaPorCodigo(c);
+          const cFmt = formatarCodigoAvaria(c);
           const chip = document.createElement('span');
           chip.className = 'avaria-tag-chip';
-          if (it) chip.setAttribute('title', `${c} - ${it.nome}`);
+          if (it) chip.setAttribute('title', `${cFmt} - ${it.nome}`);
           chip.innerHTML = `
-            <span><strong>[${c}]</strong></span>
+            <span><strong>[${cFmt}]</strong></span>
             <button type="button" class="avaria-tag-chip__remove" data-cod="${c}" title="Remover avaria">&times;</button>
           `;
           const btnRemove = chip.querySelector('.avaria-tag-chip__remove');
@@ -1460,9 +1494,10 @@ function initAvariasModule() {
     if (!item) return '';
     const desc = item.nome; // Nome completo oficial da tabela (sem abreviação)
     const ativo = avariasSelecionadas.has(cod) ? 'is-active' : '';
+    const codFmt = formatarCodigoAvaria(cod);
     return `
       <button type="button" class="btn-avaria-chip ${ativo}" data-cod="${cod}" title="${item.nome}">
-        <span class="chip-num">${cod}</span>
+        <span class="chip-num">${codFmt}</span>
         <span class="chip-label">${desc}</span>
       </button>
     `;
@@ -1984,17 +2019,17 @@ function initAvariasModule() {
             <rect x="60" y="24" width="180" height="20" rx="3" fill="#000000" stroke="#334155" stroke-width="1.5" />
             <text x="150" y="38" fill="#ffea00" font-family="monospace" font-size="11" font-weight="bold" text-anchor="middle">416C CENTRAL</text>
 
-            <!-- Para-brisa E e D -->
+            <!-- Para-brisa D e E (Invertido para corresponder à perspectiva frontal do ônibus: Lado D à esquerda do observador, Lado E à direita) -->
             <rect x="40" y="55" width="105" height="70" rx="4" fill="#0f172a" stroke="#00aaff" stroke-width="1.5" />
             <rect x="155" y="55" width="105" height="70" rx="4" fill="#0f172a" stroke="#00aaff" stroke-width="1.5" />
-            <text x="92" y="92" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">PARA-BRISA E</text>
-            <text x="207" y="92" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">PARA-BRISA D</text>
+            <text x="92" y="92" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">PARA-BRISA D</text>
+            <text x="207" y="92" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">PARA-BRISA E</text>
 
             <!-- Retrovisores Dianteiros -->
-            <!-- Esquerdo -->
+            <!-- Direito (à esquerda no desenho) -->
             <rect x="15" y="65" width="16" height="42" rx="3" fill="#1e293b" stroke="#e2e8f0" stroke-width="1" />
             <line x1="31" y1="75" x2="39" y2="75" stroke="#94a3b8" stroke-width="3" />
-            <!-- Direito -->
+            <!-- Esquerdo (à direita no desenho) -->
             <rect x="269" y="65" width="16" height="42" rx="3" fill="#1e293b" stroke="#e2e8f0" stroke-width="1" />
             <line x1="261" y1="75" x2="269" y2="75" stroke="#94a3b8" stroke-width="3" />
 
@@ -2013,8 +2048,8 @@ function initAvariasModule() {
 
             <rect x="25" y="185" width="40" height="30" rx="3" fill="#ca8a04" opacity="0.4" />
             <rect x="235" y="185" width="40" height="30" rx="3" fill="#ca8a04" opacity="0.4" />
-            <text x="45" y="226" font-size="9" fill="#00aaff" font-weight="bold" text-anchor="middle">PONT. E</text>
-            <text x="255" y="226" font-size="9" fill="#00aaff" font-weight="bold" text-anchor="middle">PONT. D</text>
+            <text x="45" y="226" font-size="9" fill="#00aaff" font-weight="bold" text-anchor="middle">PONT. D</text>
+            <text x="255" y="226" font-size="9" fill="#00aaff" font-weight="bold" text-anchor="middle">PONT. E</text>
           </svg>
         </div>
 
@@ -2024,34 +2059,34 @@ function initAvariasModule() {
             <div class="secao-avaria-box__header">Vidros e Para-brisa</div>
             <div class="secao-avaria-box__botoes">
               ${criarChip(135, 'Vidro Vista Queb')}
-              ${criarChip(25, 'Parabrisa E Trinc')}
               ${criarChip(26, 'Parabrisa D Trinc')}
+              ${criarChip(25, 'Parabrisa E Trinc')}
             </div>
           </div>
 
-          <!-- Faróis E e D -->
+          <!-- Faróis D e E -->
           <div class="secao-avaria-box">
             <div class="secao-avaria-box__header">Faróis</div>
             <div class="secao-avaria-box__botoes">
-              ${criarChip(87, 'Lente Farol E')}
-              ${criarChip(89, 'Capa Farol E')}
-              ${criarChip(91, 'Farol E Avar')}
               ${criarChip(88, 'Lente Farol D')}
               ${criarChip(90, 'Capa Farol D')}
               ${criarChip(92, 'Farol D Avar')}
+              ${criarChip(87, 'Lente Farol E')}
+              ${criarChip(89, 'Capa Farol E')}
+              ${criarChip(91, 'Farol E Avar')}
             </div>
           </div>
 
-          <!-- Retrovisores E e D -->
+          <!-- Retrovisores D e E -->
           <div class="secao-avaria-box">
             <div class="secao-avaria-box__header">Retrovisores</div>
             <div class="secao-avaria-box__botoes">
-              ${criarChip(117, 'Braço Retro E')}
-              ${criarChip(119, 'Lente Retro E')}
-              ${criarChip(121, 'Capa Retro E')}
               ${criarChip(118, 'Braço Retro D')}
               ${criarChip(120, 'Lente Retro D')}
               ${criarChip(122, 'Capa Retro D')}
+              ${criarChip(117, 'Braço Retro E')}
+              ${criarChip(119, 'Lente Retro E')}
+              ${criarChip(121, 'Capa Retro E')}
             </div>
           </div>
 
@@ -2065,10 +2100,10 @@ function initAvariasModule() {
               ${criarChip(132, 'Grade Inf Queb')}
               ${criarChip(127, 'Parachoque Diant Rasp')}
               ${criarChip(128, 'Parachoque Diant Queb')}
-              ${criarChip(1, 'Pont. Diant E Queb')}
-              ${criarChip(3, 'Pont. Diant E Rasp')}
               ${criarChip(2, 'Pont. Diant D Queb')}
               ${criarChip(4, 'Pont. Diant D Rasp')}
+              ${criarChip(1, 'Pont. Diant E Queb')}
+              ${criarChip(3, 'Pont. Diant E Rasp')}
             </div>
           </div>
         </div>
@@ -2176,7 +2211,7 @@ function initAvariasModule() {
         <div class="lista-completa-grid" id="gridListaCompleta">
           ${TABELA_AVARIAS_144.map(item => `
             <div class="item-codigo-card ${avariasSelecionadas.has(item.cod) ? 'is-active' : ''}" data-cod="${item.cod}">
-              <span class="item-codigo-card__cod">${item.cod}</span>
+              <span class="item-codigo-card__cod">${formatarCodigoAvaria(item.cod)}</span>
               <span class="item-codigo-card__nome">${item.nome}</span>
             </div>
           `).join('')}
@@ -2410,6 +2445,7 @@ function initJornadaModule() {
   const kmTacoFinalInput = document.getElementById('inputKmTacoFinal');
   const kmTacoRodadoInput = document.getElementById('inputKmTacoRodado');
   const avariasInput = document.getElementById('inputAvarias');
+  const btnAvarias = document.getElementById('btnAvarias');
 
   // Novos botões e campos de pontos de jornada e viagem
   const btnChegadaGaragem = document.getElementById('btnChegadaGaragem');
@@ -2421,6 +2457,10 @@ function initJornadaModule() {
   const inputChegadaCarro = document.getElementById('inputChegadaCarro');
   const btnHoraVinculacao = document.getElementById('btnHoraVinculacao');
   const inputHoraVinculacao = document.getElementById('inputHoraVinculacao');
+  const btnHoraDesvinculacao = document.getElementById('btnHoraDesvinculacao');
+  const inputHoraDesvinculacao = document.getElementById('inputHoraDesvinculacao');
+  const btnFechamentoGaragem = document.getElementById('btnFechamentoGaragem');
+  const inputFechamentoGaragem = document.getElementById('inputFechamentoGaragem');
 
   const btnCarroViagem = document.getElementById('btnCarroViagem');
   const inputCarroViagem = document.getElementById('inputCarroViagem');
@@ -2798,6 +2838,8 @@ function initJornadaModule() {
         chegadaPonto1: inputChegadaPonto1 ? inputChegadaPonto1.value : '',
         chegadaCarro: inputChegadaCarro ? inputChegadaCarro.value : '',
         horaVinculacao: inputHoraVinculacao ? inputHoraVinculacao.value : '',
+        horaDesvinculacao: inputHoraDesvinculacao ? inputHoraDesvinculacao.value : '',
+        fechamentoGaragem: inputFechamentoGaragem ? inputFechamentoGaragem.value : '',
         roletaInicial: inputRoletaInicial ? inputRoletaInicial.value : '',
         roletaFinal: inputRoletaFinal ? inputRoletaFinal.value : '',
         roletaPassageiros: inputRoletaPassageiros ? inputRoletaPassageiros.value : '',
@@ -2899,6 +2941,14 @@ function initJornadaModule() {
         inputHoraVinculacao.value = rascunho.horaVinculacao;
         inputHoraVinculacao.readOnly = true;
       }
+      if (inputHoraDesvinculacao && rascunho.horaDesvinculacao) {
+        inputHoraDesvinculacao.value = rascunho.horaDesvinculacao;
+        inputHoraDesvinculacao.readOnly = true;
+      }
+      if (inputFechamentoGaragem && rascunho.fechamentoGaragem) {
+        inputFechamentoGaragem.value = rascunho.fechamentoGaragem;
+        inputFechamentoGaragem.readOnly = true;
+      }
 
       // Validador
       if (rascunho.validador) {
@@ -2981,7 +3031,7 @@ function initJornadaModule() {
       if (salvo) {
         const rascunho = JSON.parse(salvo);
         if (rascunho && rascunho.avarias !== undefined) {
-          avariasInput.value = rascunho.avarias;
+          avariasInput.value = formatarTextoAvarias(rascunho.avarias);
           return;
         }
       }
@@ -2993,7 +3043,7 @@ function initJornadaModule() {
       if (rawRascunhoAvarias) {
         const rAv = JSON.parse(rawRascunhoAvarias);
         if (Array.isArray(rAv.codigos) && rAv.codigos.length > 0) {
-          avariasInput.value = rAv.codigos.join(', ');
+          avariasInput.value = rAv.codigos.map(formatarCodigoAvaria).join('.');
           salvarRascunhoJornada();
           return;
         } else {
@@ -3063,6 +3113,8 @@ function initJornadaModule() {
     if (inputChegadaPonto1) inputChegadaPonto1.value = jornada.chegadaPonto1 || '';
     if (inputChegadaCarro) inputChegadaCarro.value = jornada.chegadaCarro || '';
     if (inputHoraVinculacao) inputHoraVinculacao.value = jornada.horaVinculacao || '';
+    if (inputHoraDesvinculacao) inputHoraDesvinculacao.value = jornada.horaDesvinculacao || '';
+    if (inputFechamentoGaragem) inputFechamentoGaragem.value = jornada.fechamentoGaragem || '';
 
     if (inputRoletas) inputRoletas.value = jornada.roletas || '';
     if (inputChegadaPonto2) inputChegadaPonto2.value = jornada.chegadaPonto2 || '';
@@ -3162,6 +3214,8 @@ function initJornadaModule() {
     if (inputChegadaPonto1) { inputChegadaPonto1.value = ''; inputChegadaPonto1.readOnly = true; }
     if (inputChegadaCarro) { inputChegadaCarro.value = ''; inputChegadaCarro.readOnly = true; }
     if (inputHoraVinculacao) { inputHoraVinculacao.value = ''; inputHoraVinculacao.readOnly = true; }
+    if (inputHoraDesvinculacao) { inputHoraDesvinculacao.value = ''; inputHoraDesvinculacao.readOnly = true; }
+    if (inputFechamentoGaragem) { inputFechamentoGaragem.value = ''; inputFechamentoGaragem.readOnly = true; }
     if (inputRoletas) inputRoletas.value = '';
     if (inputChegadaPonto2) { inputChegadaPonto2.value = ''; inputChegadaPonto2.readOnly = true; }
     if (inputFiscalizacao1) { inputFiscalizacao1.value = ''; inputFiscalizacao1.readOnly = true; }
@@ -3251,6 +3305,8 @@ function initJornadaModule() {
       chegadaPonto1: inputChegadaPonto1 ? inputChegadaPonto1.value.trim() : '',
       chegadaCarro: inputChegadaCarro ? inputChegadaCarro.value.trim() : '',
       horaVinculacao: inputHoraVinculacao ? inputHoraVinculacao.value.trim() : '',
+      horaDesvinculacao: inputHoraDesvinculacao ? inputHoraDesvinculacao.value.trim() : '',
+      fechamentoGaragem: inputFechamentoGaragem ? inputFechamentoGaragem.value.trim() : '',
       roletas: (sessoesTabela[0] && sessoesTabela[0].roletas) || (inputRoletas ? inputRoletas.value.trim() : ''),
       chegadaPonto2: (sessoesTabela[0] && sessoesTabela[0].chegadaPonto2) || (inputChegadaPonto2 ? inputChegadaPonto2.value.trim() : ''),
       fiscalizacao1: (sessoesTabela[0] && sessoesTabela[0].fiscalizacao1) || (inputFiscalizacao1 ? inputFiscalizacao1.value.trim() : ''),
@@ -3274,8 +3330,8 @@ function initJornadaModule() {
     const temSessoes = sessoes.length > 0 || dados.roletas;
     const temKmPainel = dados.kmPainelInicial || dados.kmPainelFinal || dados.kmPainelRodado;
     const temKmTaco = dados.kmTacoInicial || dados.kmTacoFinal || dados.kmTacoRodado;
-    const temPontos1 = dados.chegadaGaragem || dados.chegadaPonto1;
-    const temPontos2 = dados.chegadaCarro || dados.horaVinculacao;
+    const temPontos1 = dados.chegadaGaragem || dados.chegadaPonto1 || dados.chegadaCarro;
+    const temPontos2 = dados.horaVinculacao || dados.horaDesvinculacao || dados.fechamentoGaragem;
 
     let rotuloTipoTroca = 'INÍCIO';
     if (dados.tipoTroca === 'linha') rotuloTipoTroca = 'TROCA DE LINHA';
@@ -3335,27 +3391,35 @@ function initJornadaModule() {
       ` : ''}
 
       ${temPontos1 ? `
-        <div class="item-jornada-row item-jornada-row--dupla">
+        <div class="item-jornada-row item-jornada-row--tripla">
           <div class="item-jornada-ponto-box">
-            <span class="col-jornada-km-tag">Chegada Garagem</span>
+            <span class="col-jornada-km-tag">Cheg. Garagem</span>
             <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.chegadaGaragem || '--:--'}</span>
           </div>
           <div class="item-jornada-ponto-box">
-            <span class="col-jornada-km-tag">Chegada Ponto</span>
+            <span class="col-jornada-km-tag">Cheg. Ponto</span>
             <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.chegadaPonto1 || '--:--'}</span>
+          </div>
+          <div class="item-jornada-ponto-box">
+            <span class="col-jornada-km-tag">Cheg. Carro</span>
+            <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.chegadaCarro || '--:--'}</span>
           </div>
         </div>
       ` : ''}
 
       ${temPontos2 ? `
-        <div class="item-jornada-row item-jornada-row--dupla">
+        <div class="item-jornada-row item-jornada-row--tripla">
           <div class="item-jornada-ponto-box">
-            <span class="col-jornada-km-tag">Chegada Carro</span>
-            <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.chegadaCarro || '--:--'}</span>
+            <span class="col-jornada-km-tag">Hora Vincul.</span>
+            <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.horaVinculacao || '--:--'}</span>
           </div>
           <div class="item-jornada-ponto-box">
-            <span class="col-jornada-km-tag">Hora Vinculação</span>
-            <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.horaVinculacao || '--:--'}</span>
+            <span class="col-jornada-km-tag">Hora Desvinc.</span>
+            <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.horaDesvinculacao || '--:--'}</span>
+          </div>
+          <div class="item-jornada-ponto-box">
+            <span class="col-jornada-km-tag">Fech. Garagem</span>
+            <span class="col-jornada-km-val col-jornada-km-val--ponto">${dados.fechamentoGaragem || '--:--'}</span>
           </div>
         </div>
       ` : ''}
@@ -3997,6 +4061,8 @@ function initJornadaModule() {
         chegadaPonto1: etapaFinal.chegadaPonto1,
         chegadaCarro: etapaFinal.chegadaCarro,
         horaVinculacao: etapaFinal.horaVinculacao,
+        horaDesvinculacao: etapaFinal.horaDesvinculacao,
+        fechamentoGaragem: etapaFinal.fechamentoGaragem,
         roletas: etapaFinal.roletas,
         chegadaPonto2: etapaFinal.chegadaPonto2,
         fiscalizacao1: etapaFinal.fiscalizacao1,
@@ -4067,6 +4133,8 @@ function initJornadaModule() {
           chegadaPonto1: mesclarCampo(novaJornada.chegadaPonto1, existente.chegadaPonto1),
           chegadaCarro: mesclarCampo(novaJornada.chegadaCarro, existente.chegadaCarro),
           horaVinculacao: mesclarCampo(novaJornada.horaVinculacao, existente.horaVinculacao),
+          horaDesvinculacao: mesclarCampo(novaJornada.horaDesvinculacao, existente.horaDesvinculacao),
+          fechamentoGaragem: mesclarCampo(novaJornada.fechamentoGaragem, existente.fechamentoGaragem),
           roletas: mesclarCampo(novaJornada.roletas, existente.roletas),
           chegadaPonto2: mesclarCampo(novaJornada.chegadaPonto2, existente.chegadaPonto2),
           fiscalizacao1: mesclarCampo(novaJornada.fiscalizacao1, existente.fiscalizacao1),
@@ -4536,6 +4604,8 @@ function initJornadaModule() {
   vincularBotaoHora(btnChegadaPonto1, inputChegadaPonto1);
   vincularBotaoHora(btnChegadaCarro, inputChegadaCarro);
   vincularBotaoHora(btnHoraVinculacao, inputHoraVinculacao);
+  vincularBotaoHora(btnHoraDesvinculacao, inputHoraDesvinculacao);
+  vincularBotaoHora(btnFechamentoGaragem, inputFechamentoGaragem);
 
   /* --- Gerenciamento da Tabela de Roletas e Viagens (Header com Botões + Linhas Dinâmicas de Inputs) --- */
 
@@ -4916,6 +4986,21 @@ function initJornadaModule() {
     sincronizarAvariasComJornada();
   });
 
+  if (avariasInput) {
+    avariasInput.addEventListener('blur', () => {
+      if (avariasInput.value.trim()) {
+        avariasInput.value = formatarTextoAvarias(avariasInput.value);
+        salvarRascunhoJornada();
+      }
+    });
+  }
+
+  if (btnAvarias) {
+    btnAvarias.addEventListener('click', () => {
+      salvarRascunhoJornada();
+    });
+  }
+
   /* --- Envio de WhatsApp (TOTAL e PARCIAL) --- */
   const btnWhatsappTotal = document.getElementById('btnWhatsappTotal');
   const btnWhatsappParcial = document.getElementById('btnWhatsappParcial');
@@ -4955,36 +5040,101 @@ function initJornadaModule() {
     return { primeira, ultima };
   }
 
-  function enviarWhatsappJornada(tipo) {
-    const semana = semanaInput ? semanaInput.value.trim() : '';
-    const data = dataInput ? dataInput.value.trim() : '';
-    const matricula = matInput ? matInput.value.trim() : '';
-    const nome = motInput ? motInput.value.trim() : '';
-    const carro = carroNumInput ? carroNumInput.value.trim() : '';
-    const { primeira: primeiraRoleta, ultima: ultimaRoleta } = obterPrimeiraEUltimaRoleta();
-    const avarias = avariasInput ? avariasInput.value.trim() : '';
+  function obterDadosJornadaParaWhatsapp() {
+    let semana = semanaInput ? semanaInput.value.trim() : '';
+    let data = dataInput ? dataInput.value.trim() : '';
+    let matricula = matInput ? matInput.value.trim() : '';
+    let nome = motInput ? motInput.value.trim() : '';
+    let carro = carroNumInput ? carroNumInput.value.trim() : '';
+    let avarias = avariasInput ? avariasInput.value.trim() : '';
+    let { primeira: primeiraRoleta, ultima: ultimaRoleta } = typeof obterPrimeiraEUltimaRoleta === 'function' ? obterPrimeiraEUltimaRoleta() : { primeira: '', ultima: '' };
 
+    // Se os campos do DOM estiverem vazios (ex: chamado de outra tela ou antes de renderizar), busca do rascunho persistente
     if (!data && !carro && !matricula) {
+      try {
+        const raw = localStorage.getItem('controle_motorista_jornada_rascunho');
+        if (raw) {
+          const r = JSON.parse(raw);
+          semana = semana || r.semana || '';
+          data = data || r.data || '';
+          matricula = matricula || r.matricula || '';
+          nome = nome || r.motoristaNome || '';
+          carro = carro || r.carroNumero || '';
+          avarias = avarias || r.avarias || '';
+          if (!primeiraRoleta && Array.isArray(r.etapasLinhasRoletas) && r.etapasLinhasRoletas.length > 0) {
+            const roletas = r.etapasLinhasRoletas.map(e => e.roleta).filter(Boolean);
+            if (roletas.length > 0) {
+              primeiraRoleta = roletas[0];
+              ultimaRoleta = roletas[roletas.length - 1];
+            }
+          }
+          if (!primeiraRoleta && r.roletaInicial) primeiraRoleta = r.roletaInicial;
+          if (!ultimaRoleta && r.roletaFinal) ultimaRoleta = r.roletaFinal;
+        }
+      } catch (e) {}
+    }
+
+    return { semana, data, matricula, nome, carro, primeiraRoleta, ultimaRoleta, avarias };
+  }
+
+  function formatarMensagemWhatsapp(tipo, dados) {
+    const { saudacao, semana, data, matricula, nome, carro, primeiraRoleta, ultimaRoleta, avarias } = dados;
+
+    // 1. Saudação com vírgula no final (ex: "Boa tarde,")
+    const linhaSaudacao = `${saudacao},`;
+
+    // 2. Semana, Data (ex: "Segunda-feira, 31/08/2026")
+    const linhaData = [semana, data].filter(Boolean).join(', ');
+
+    // 3. Matrícula - Nome (ex: "36455 - Wilson Ramos")
+    let linhaMotorista = '';
+    if (matricula && nome) {
+      linhaMotorista = `${matricula} - ${nome}`;
+    } else {
+      linhaMotorista = matricula || nome || '';
+    }
+
+    // 4. Carro com rótulo "Carro: " (ex: "Carro: 110.360" ou "Carro:")
+    const linhaCarro = carro ? `Carro: ${carro}` : 'Carro:';
+
+    if (tipo === 'TOTAL') {
+      const linhaRoleta = primeiraRoleta ? `Roleta: ${primeiraRoleta}` : 'Roleta:';
+      const linhaAvarias = avarias ? `Avarias: ${avarias}` : 'Avarias:';
+
+      const blocos = [
+        linhaSaudacao,
+        linhaData,
+        linhaMotorista,
+        linhaCarro,
+        linhaRoleta,
+        linhaAvarias
+      ].filter(b => b !== '');
+
+      return blocos.join('\n\n');
+    } else {
+      // PARCIAL: Saudação, Carro e Roleta (última roleta)
+      const linhaRoletaParcial = ultimaRoleta ? `Roleta: ${ultimaRoleta}` : 'Roleta:';
+
+      const blocos = [
+        linhaSaudacao,
+        linhaCarro,
+        linhaRoletaParcial
+      ].filter(b => b !== '');
+
+      return blocos.join('\n\n');
+    }
+  }
+
+  function enviarWhatsappJornada(tipo) {
+    const dados = obterDadosJornadaParaWhatsapp();
+
+    if (!dados.data && !dados.carro && !dados.matricula) {
       alert('Por favor, preencha os dados da jornada antes de enviar via WhatsApp.');
       return;
     }
 
-    const saudacao = obterSaudacaoHorario();
-    const linha1 = [semana, data].filter(Boolean).join(', ');
-    const linha2 = [matricula, nome].filter(Boolean).join(', ');
-    const linha3 = carro || '--';
-
-    let mensagem = '';
-
-    if (tipo === 'TOTAL') {
-      const linha4 = primeiraRoleta || '--';
-      const linha5 = avarias || 'Sem avarias';
-      mensagem = `${saudacao}\n\n${linha1}\n${linha2}\n${linha3}\n${linha4}\n${linha5}`;
-    } else {
-      // PARCIAL
-      const linha4 = ultimaRoleta || '--';
-      mensagem = `${saudacao}\n\n${linha1}\n${linha2}\n${linha3}\n${linha4}`;
-    }
+    dados.saudacao = obterSaudacaoHorario();
+    const mensagem = formatarMensagemWhatsapp(tipo, dados);
 
     dispararEnvioWhatsapp(mensagem);
   }

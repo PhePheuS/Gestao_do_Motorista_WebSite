@@ -8,3 +8,8 @@
   - **Patch (`Z`)**: Pequenas correções de bugs ou pequenos ajustes visuais.
   - **Minor (`Y`)**: Adição de novos campos, funcionalidades ou melhorias em módulos existentes.
   - **Major (`X`)**: Novo módulo completo, reformulação estrutural ou grandes entregas.
+
+## 2. Execução Direta e Autônoma (Sem Solicitação de Aprovação Prévia / 'Accept All')
+- O agente DEVE executar todas as alterações e programações de ponta a ponta de forma direta e imediata.
+- NÃO solicitar aprovações prévias, confirmações intermediárias ou planos bloqueantes com pedido de feedback ('Proceed' / 'Accept All').
+- Aplicar as modificações diretamente no código, validar o funcionamento e entregar o resultado final concluído.

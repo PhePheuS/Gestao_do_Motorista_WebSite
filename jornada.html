@@ -137,8 +137,11 @@
               <input type="text" id="inputKmTacoFinal" class="input-escala col-jornada-km" placeholder="KM Tacógrafo Final" inputmode="numeric" />
               <input type="text" id="inputKmTacoRodado" class="input-escala col-jornada-km col-jornada-km--rodado" placeholder="KM Tacógrafo Rodado" readonly />
             </div>
-            <!-- Linha 7: Avarias -->
+            <!-- Linha 7: Botão Avarias + Campo Avarias -->
             <div class="form-escala-row form-jornada-row--bottom">
+              <a href="avarias.html" class="btn-jornada-avarias" id="btnAvarias" data-nome="Avarias" aria-label="Abrir módulo de Avarias">
+                Avarias
+              </a>
               <input type="text" id="inputAvarias" class="input-escala col-jornada-avarias" placeholder="Avarias" />
             </div>
           </div>
@@ -163,8 +166,8 @@
           <div id="painelEtapasSalvasEmAndamento" class="painel-etapas-andamento" style="display:none; width: 100%;"></div>
         </div>
 
-        <!-- Linha 8: Chegada Garagem = Chegada Ponto -->
-        <div class="form-escala-row form-jornada-row--dupla">
+        <!-- Linha 8: Chegada Garagem, Chegada Ponto, Chegada Carro -->
+        <div class="form-escala-row form-jornada-row--tripla">
           <div class="jornada-ponto-col">
             <button type="button" class="btn-jornada-hora" id="btnChegadaGaragem" aria-label="Registrar Chegada Garagem">Chegada Garagem</button>
             <input type="text" id="inputChegadaGaragem" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
@@ -173,17 +176,25 @@
             <button type="button" class="btn-jornada-hora" id="btnChegadaPonto1" aria-label="Registrar Chegada Ponto">Chegada Ponto</button>
             <input type="text" id="inputChegadaPonto1" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
           </div>
-        </div>
-
-        <!-- Linha 9: Chegada Carro = Hora Vinculação -->
-        <div class="form-escala-row form-jornada-row--dupla">
           <div class="jornada-ponto-col">
             <button type="button" class="btn-jornada-hora" id="btnChegadaCarro" aria-label="Registrar Chegada Carro">Chegada Carro</button>
             <input type="text" id="inputChegadaCarro" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
           </div>
+        </div>
+
+        <!-- Linha 9: Hora Vinculação, Hora Desvinculação, Fechamento Garagem -->
+        <div class="form-escala-row form-jornada-row--tripla">
           <div class="jornada-ponto-col">
             <button type="button" class="btn-jornada-hora" id="btnHoraVinculacao" aria-label="Registrar Hora Vinculação">Hora Vinculação</button>
             <input type="text" id="inputHoraVinculacao" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
+          </div>
+          <div class="jornada-ponto-col">
+            <button type="button" class="btn-jornada-hora" id="btnHoraDesvinculacao" aria-label="Registrar Hora Desvinculação">Hora Desvinculação</button>
+            <input type="text" id="inputHoraDesvinculacao" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
+          </div>
+          <div class="jornada-ponto-col">
+            <button type="button" class="btn-jornada-hora" id="btnFechamentoGaragem" aria-label="Registrar Fechamento Garagem">Fechamento Garagem</button>
+            <input type="text" id="inputFechamentoGaragem" class="input-escala col-jornada-hora-ponto" placeholder="--:--" maxlength="5" readonly />
           </div>
         </div>
 
